@@ -2,11 +2,11 @@ import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import { useAuth } from '../hooks/useAuth';
-
 import toast from 'react-hot-toast';
 
 const Home = lazy(() => import('../pages/Home'));
-const Login = lazy(() => import('../pages/Login'));
+const Login = lazy(() => import('../pages/auth/Login'));
+const Signup = lazy(() => import('../pages/auth/Signup'));
 const PersonaLanding = lazy(() => import('../pages/PersonaLanding'));
 const MasterLanding = lazy(() => import('../pages/MasterLanding'));
 
@@ -24,14 +24,16 @@ const AuditVaultPage = lazy(() => import('../pages/AuditVaultPage'));
 const NotFound = lazy(() => import('../pages/NotFound'));
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { isAuthenticated, user } = useAuth();
-  if (!isAuthenticated) return <Navigate to="/" replace />;
+  const { isAuthenticated, user, isLoading } = useAuth();
   
-  const role = localStorage.getItem('smartrent_user_role') || user?.role?.toLowerCase();
+  if (isLoading) return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  
+  const role = user?.role?.toLowerCase();
   
   if (allowedRoles && role && !allowedRoles.includes(role)) {
     toast.error("Access Denied");
-    return <Navigate to={`/${role}-dashboard`} replace />;
+    return <Navigate to={`/home`} replace />;
   }
   return children;
 };
@@ -40,12 +42,16 @@ const AppRoutes = () => {
   return (
     <Suspense fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}>
       <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        
         <Route element={<Layout />}>
           <Route path="/" element={<MasterLanding />} />
           <Route path="/home" element={<Home />} />
           <Route path="/welcome/:role" element={<PersonaLanding />} />
           <Route path="/listings" element={<ListingPage />} />
           <Route path="/properties" element={<PropertiesPage />} />
+          
           {['/dashboard', '/tenant-dashboard', '/owner-dashboard', '/inspector-dashboard', '/service-dashboard', '/admin-dashboard'].map((path) => (
             <Route 
               key={path}
@@ -57,6 +63,7 @@ const AppRoutes = () => {
               } 
             />
           ))}
+          
           <Route 
             path="/profile" 
             element={
@@ -65,6 +72,7 @@ const AppRoutes = () => {
               </ProtectedRoute>
             } 
           />
+          
           <Route 
             path="/admin/analytics" 
             element={
@@ -73,6 +81,7 @@ const AppRoutes = () => {
               </ProtectedRoute>
             } 
           />
+          
           <Route 
             path="/payments" 
             element={
@@ -81,6 +90,7 @@ const AppRoutes = () => {
               </ProtectedRoute>
             } 
           />
+          
           <Route 
             path="/lease" 
             element={
@@ -89,6 +99,7 @@ const AppRoutes = () => {
               </ProtectedRoute>
             } 
           />
+          
           <Route 
             path="/service-requests" 
             element={
@@ -97,37 +108,40 @@ const AppRoutes = () => {
               </ProtectedRoute>
             } 
           />
+          
           <Route 
             path="/admin/entities" 
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['admin']}>
                 <AdminEntitiesPage />
               </ProtectedRoute>
             } 
           />
+          
           <Route 
             path="/admin/assets" 
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['admin']}>
                 <AdminAssetsPage />
               </ProtectedRoute>
             } 
           />
+          
           <Route 
             path="/admin/audit-vault" 
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['admin']}>
                 <AuditVaultPage />
               </ProtectedRoute>
             } 
           />
+          
           <Route path="*" element={<NotFound />} />
         </Route>
-        <Route path="/login" element={<Login />} />
-        <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
   );
 };
 
 export default AppRoutes;
+
