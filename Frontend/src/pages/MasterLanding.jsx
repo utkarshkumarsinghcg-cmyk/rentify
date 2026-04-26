@@ -86,7 +86,7 @@ const MasterLanding = () => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
       <Helmet>
-        <title>SmartRent | The All-in-One Rental Ecosystem</title>
+        <title>Rentify | The All-in-One Rental Ecosystem</title>
       </Helmet>
 
       {/* Hero Section */}
@@ -108,7 +108,7 @@ const MasterLanding = () => {
               <span className="text-blue-600">Rental Ecosystem</span>
             </h1>
             <p className="text-lg text-slate-600 dark:text-slate-400 mb-10 max-w-lg leading-relaxed">
-              Whether you're listing, renting, or maintaining, we have the tools for you. Experience a seamless property journey with SmartRent.
+              Whether you're listing, renting, or maintaining, we have the tools for you. Experience a seamless property journey with Rentify.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" className="w-full sm:w-auto font-bold shadow-lg shadow-blue-600/20" onClick={() => document.getElementById('roles').scrollIntoView({behavior: 'smooth'})}>
