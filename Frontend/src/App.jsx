@@ -4,6 +4,7 @@ import { Provider, useSelector } from 'react-redux';
 import { HelmetProvider } from 'react-helmet-async';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Toaster } from 'react-hot-toast';
 
 import { store } from './store/store';
 import AppRoutes from './routes/AppRoutes';
@@ -26,6 +27,7 @@ const ThemedApp = () => {
     <BrowserRouter>
       <AppRoutes />
       <ToastContainer position="bottom-right" theme={theme} />
+      <Toaster position="top-right" containerStyle={{ top: 20, right: 20 }} />
     </BrowserRouter>
   );
 };
