@@ -13,7 +13,7 @@ const Home = () => {
   return (
     <>
       <Helmet>
-        <title>SmartRent | Professional Property Management</title>
+        <title>Rentify | Professional Property Management</title>
         <meta name="description" content="Find Safe, Verified Rentals Near You" />
       </Helmet>
       
