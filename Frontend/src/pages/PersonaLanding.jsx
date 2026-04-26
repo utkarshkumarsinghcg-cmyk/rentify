@@ -34,7 +34,7 @@ const PersonaLanding = () => {
       case 'admin':
         return {
           title: 'System Governance Dashboard',
-          subtitle: 'Oversee the entire SmartRent ecosystem. Manage users, resolve disputes, and monitor system health.',
+          subtitle: 'Oversee the entire Rentify ecosystem. Manage users, resolve disputes, and monitor system health.',
           features: [
             { icon: ShieldAlert, title: 'Global Oversight', desc: 'Monitor system-wide metrics and user reports.' },
             { icon: Users, title: 'User Management', desc: 'Approve service providers and handle escalations.' },
@@ -52,7 +52,7 @@ const PersonaLanding = () => {
   return (
     <>
       <Helmet>
-        <title>SmartRent | For {role.charAt(0).toUpperCase() + role.slice(1)}s</title>
+        <title>Rentify | For {role.charAt(0).toUpperCase() + role.slice(1)}s</title>
       </Helmet>
       
       <section className="relative pt-24 md:pt-32 pb-20 overflow-hidden flex-1 bg-surface dark:bg-slate-950 min-h-[80vh] flex items-center">
