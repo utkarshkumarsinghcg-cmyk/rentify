@@ -1,7 +1,7 @@
 import React from 'react';
 import Navbar from './Navbar';
 import { Outlet } from 'react-router-dom';
-import AuthModal from '../common/AuthenticationModal';
+
 import SurveyRequestModal from '../property/SurveyRequestModal';
 import SettingsModal from '../common/SettingsModal';
 import ReceiptModal from '../payment/ReceiptModal';
@@ -33,7 +33,6 @@ const Layout = () => {
   return (
     <div className="min-h-screen bg-surface dark:bg-slate-950 flex flex-col">
       <Navbar />
-      <AuthModal />
       <SurveyRequestModal 
         isOpen={isSurveyModalOpen} 
         onClose={() => dispatch(closeSurveyModal())} 
@@ -62,8 +61,8 @@ const Layout = () => {
       <footer className="bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 w-full py-12 mt-auto">
         <div className="flex flex-col md:flex-row justify-between items-center px-8 max-w-7xl mx-auto gap-8">
           <div className="flex flex-col gap-2 items-center md:items-start">
-            <div className="font-bold text-slate-900 dark:text-white text-xl">SmartRent</div>
-            <p className="font-sans text-xs text-slate-500 dark:text-slate-400">© 2026 SmartRent. Professional Property Management.</p>
+            <div className="font-bold text-slate-900 dark:text-white text-xl">Rentify</div>
+            <p className="font-sans text-xs text-slate-500 dark:text-slate-400">© 2026 Rentify. Professional Property Management.</p>
           </div>
           <div className="flex gap-8 font-sans text-xs text-slate-500 dark:text-slate-400">
             <a className="hover:text-blue-600 transition-opacity underline underline-offset-4" href="#">Privacy Policy</a>
