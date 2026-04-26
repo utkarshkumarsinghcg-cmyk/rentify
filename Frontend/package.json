@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -24,12 +25,12 @@
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
     "leaflet": "^1.9.4",
-    "lucide-react": "^1.11.0",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5",
+    "lucide-react": "^1.8.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-helmet-async": "^3.0.0",
     "react-hot-toast": "^2.6.0",
-    "react-leaflet": "^5.0.0",
+    "react-leaflet": "^4.2.1",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.14.2",
     "react-signature-canvas": "^1.1.0-alpha.2",
@@ -40,11 +41,17 @@
     "yup": "^1.7.1"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.2.4",
+    "@eslint/js": "^9.39.4",
+    "@types/react": "^18.3.28",
+    "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^6.0.1",
     "autoprefixer": "^10.5.0",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.5.0",
     "postcss": "^8.5.10",
-    "tailwindcss": "^4.2.4",
-    "vite": "^8.0.10"
+    "tailwindcss": "^3.4.19",
+    "vite": "^8.0.9"
   }
 }
