@@ -10,7 +10,7 @@ import InspectorDashboardView from '../components/inspection/InspectorDashboard'
 import OwnerDashboardView from '../components/owner/OwnerDashboard';
 import RenterDashboardView from '../components/renter/RenterDashboard';
 
-// Services
+import { getSocket } from '../services/socket';
 import propertyService from '../services/propertyService';
 
 const Dashboard = () => {
@@ -52,11 +52,26 @@ const Dashboard = () => {
   };
 
   React.useEffect(() => {
-    if (resolvedRole) fetchData();
+    if (resolvedRole) {
+      fetchData();
+      
+      const socket = getSocket();
+      socket.on('request_update', fetchData);
+      socket.on('new_task', fetchData);
+      socket.on('new_ticket', fetchData);
+      socket.on('admin_notification', fetchData);
+
+      return () => {
+        socket.off('request_update', fetchData);
+        socket.off('new_task', fetchData);
+        socket.off('new_ticket', fetchData);
+        socket.off('admin_notification', fetchData);
+      };
+    }
   }, [resolvedRole]);
 
   // Remove early return to maintain hook order consistency
-  const showLoading = loading && resolvedRole === 'owner';
+  const showLoading = loading && !ownerData && !renterData && !adminData && !serviceData && !inspectorData;
 
   const renderDashboard = () => {
     switch (resolvedRole) {

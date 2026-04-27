@@ -174,25 +174,24 @@ const dashboardController = {
         return res.status(200).json({ pendingInspections: [], schedule: [], history: [] });
       }
 
-      // 1. Pending Inspections (Unassigned)
-      // For now, we use MaintenanceTicket as a proxy for inspections if no Inspection model exists
-      // Or we can just return empty and let the user create an Inspection model later
-      const pendingInspections = await MaintenanceTicket.find({ type: 'INSPECTION', status: 'OPEN' }).populate('property').limit(10);
+      const WorkflowRequest = require('../models/WorkflowRequest');
 
-      // 2. My Schedule
-      const schedule = await MaintenanceTicket.find({ 
-        assignedTo: inspectorId,
-        status: { $in: ['OPEN', 'IN_PROGRESS'] }
+      // 1. Pending Inspections (Assigned to me but not completed)
+      const schedule = await WorkflowRequest.find({ 
+        assignedInspector: inspectorId,
+        type: 'LEASE_APPROVAL',
+        status: 'ASSIGNED'
       }).populate('property').limit(10);
 
-      // 3. Completed History
-      const history = await MaintenanceTicket.find({
-        assignedTo: inspectorId,
-        status: 'RESOLVED'
-      }).populate('property').populate('assignedTo').limit(10);
+      // 2. Completed History
+      const history = await WorkflowRequest.find({
+        assignedInspector: inspectorId,
+        type: 'LEASE_APPROVAL',
+        status: 'COMPLETED'
+      }).populate('property').limit(10);
 
       res.status(200).json({
-        pendingInspections,
+        pendingInspections: [], // Unassigned flow is handled by Admin Dashboard
         schedule,
         history,
         userId: inspectorId
@@ -221,14 +220,19 @@ const dashboardController = {
       const leases = await Lease.find();
       const totalRevenue = leases.reduce((sum, l) => sum + (l.rentAmount || 0), 0);
 
+      const WorkflowRequest = require('../models/WorkflowRequest');
+      const workflowRequests = await WorkflowRequest.find().populate('property requester assignedInspector').sort({ createdAt: -1 });
+      const pendingWorkflow = workflowRequests.filter(r => r.status === 'PENDING').length;
+
       res.status(200).json({
         stats: {
           users: userCount,
           properties: propertyCount,
           revenue: totalRevenue,
-          alerts: recentTickets.length
+          alerts: recentTickets.length + pendingWorkflow
         },
         recentTickets,
+        workflowRequests,
         users: allUsers,
         activeLeases
       });

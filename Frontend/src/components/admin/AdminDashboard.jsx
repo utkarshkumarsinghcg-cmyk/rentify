@@ -629,14 +629,34 @@ const AdminDashboard = ({ data, onRefresh }) => {
                   </div>
                   
                   <div className="flex items-center gap-2 mt-4">
-                    {req.type === 'LEASE_APPROVAL' && req.status === 'PENDING' && (
-                      <select 
-                        className="flex-1 bg-white dark:bg-slate-900 text-[9px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 outline-none"
-                        onChange={(e) => handleUpdateWorkflow(req._id, 'ADMIN_REVIEWED', { assignedInspector: e.target.value })}
-                      >
-                        <option value="">Assign Inspector</option>
-                        {inspectors.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
-                      </select>
+                    {req.type === 'LEASE_APPROVAL' && (
+                      <div className="flex gap-2 w-full">
+                        {req.status === 'PENDING' && (
+                          <Button 
+                            onClick={() => handleUpdateWorkflow(req._id, 'ADMIN_REVIEWED')}
+                            variant="primary" className="flex-1 text-[9px] py-1.5 rounded-lg font-black"
+                          >
+                            Review Request
+                          </Button>
+                        )}
+                        {req.status === 'ADMIN_REVIEWED' && (
+                          <select 
+                            className="flex-1 bg-white dark:bg-slate-900 text-[9px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 outline-none"
+                            onChange={(e) => handleUpdateWorkflow(req._id, 'ASSIGNED', { assignedInspector: e.target.value })}
+                          >
+                            <option value="">Assign Inspector</option>
+                            {inspectors.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
+                          </select>
+                        )}
+                        {req.status === 'ASSIGNED' && (
+                          <Button 
+                            onClick={() => handleUpdateWorkflow(req._id, 'COMPLETED')}
+                            className="flex-1 bg-emerald-600 text-white text-[9px] py-1.5 rounded-lg font-black"
+                          >
+                            Mark Inspected
+                          </Button>
+                        )}
+                      </div>
                     )}
                     
                     {req.type === 'TOUR_REQUEST' && (

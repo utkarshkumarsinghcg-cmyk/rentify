@@ -15,6 +15,9 @@ import toast from 'react-hot-toast';
 import L from 'leaflet';
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+import workflowService from '../../services/workflowService';
+import inspectionService from '../../services/inspectionService';
+
 let DefaultIcon = L.icon({ iconUrl: icon, shadowUrl: iconShadow, iconAnchor: [12, 41] });
 L.Marker.prototype.options.icon = DefaultIcon;
 
@@ -28,7 +31,7 @@ const initialInspections = [
 
 const mockAuditData = {};
 
-const InspectorDashboard = ({ data }) => {
+const InspectorDashboard = ({ data, onRefresh }) => {
   const [inspections, setInspections] = useState([]);
   const [history, setHistory] = useState([]);
   const [viewMode, setViewMode] = useState('list');
@@ -49,10 +52,22 @@ const InspectorDashboard = ({ data }) => {
   const mapRef = useRef(null);
 
   useEffect(() => {
-    if (data) {
-      setInspections(data.schedule || []);
-      setHistory(data.history || []);
-    }
+    const fetchData = async () => {
+      try {
+        const [wRequests, inspHistory] = await Promise.all([
+          workflowService.getAdminRequests(), 
+          inspectionService.getInspections()
+        ]);
+        
+        // Filter workflow requests assigned to this inspector (we'll assume userId is available or filter by name)
+        // For now, showing all LEASE_APPROVAL that are ASSIGNED
+        setInspections(wRequests.filter(r => r.type === 'LEASE_APPROVAL' && r.status === 'ASSIGNED'));
+        setHistory(wRequests.filter(r => r.status === 'COMPLETED'));
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchData();
   }, [data]);
 
   useEffect(() => {
@@ -144,12 +159,17 @@ const InspectorDashboard = ({ data }) => {
     localStorage.removeItem('inspectorDraft');
   };
 
-  const handleAction = (action, item) => {
+  const handleAction = async (action, item) => {
     setMenuOpenId(null);
-    if (action === 'start') setSelectedProperty(item.property);
+    if (action === 'start') setSelectedProperty(item.property?.title || item.property?.address);
     else if (action === 'complete') {
-      setInspections(inspections.map(i => i.id === item.id ? { ...i, status: 'Completed' } : i));
-      toast.success('Marked as complete!');
+      try {
+        await workflowService.updateRequest(item._id, { status: 'COMPLETED' });
+        toast.success('Inspection marked as completed! ✓');
+        if (onRefresh) onRefresh();
+      } catch (err) {
+        toast.error('Failed to update status');
+      }
     } 
     else if (action === 'details') setDetailModalItem(item);
     else if (action === 'reschedule') setRescheduleModalId(item.id);

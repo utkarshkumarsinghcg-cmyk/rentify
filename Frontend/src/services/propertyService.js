@@ -25,9 +25,7 @@ const propertyService = {
    * Create a new property listing (Owner only)
    */
   createProperty: async (propertyData) => {
-    const response = await api.post('/properties', propertyData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
+    const response = await api.post('/properties', propertyData);
     return response.data;
   },
 

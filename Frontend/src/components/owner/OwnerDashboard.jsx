@@ -40,7 +40,9 @@ import Button from '../common/Button';
 import maintenanceService from '../../services/maintenanceService';
 import chatService from '../../services/chatService';
 import NewRequestModal from './modals/NewRequestModal';
+import AddPropertyModal from './modals/AddPropertyModal';
 import SupportChat from '../common/SupportChat';
+import propertyService from '../../services/propertyService';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, Cell
@@ -79,6 +81,7 @@ const OwnerDashboard = ({ data, onRefresh }) => {
   const [isMaintenanceModalOpen, setIsMaintenanceModalOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [ticketFilter, setTicketFilter] = useState('All');
+  const [isAddPropertyModalOpen, setIsAddPropertyModalOpen] = useState(false);
   
   // Ticket Drawer State
   const [isTicketDrawerOpen, setIsTicketDrawerOpen] = useState(false);
@@ -333,6 +336,18 @@ const OwnerDashboard = ({ data, onRefresh }) => {
     }
   };
 
+  const handleAddProperty = async (propertyData) => {
+    try {
+      await propertyService.createProperty(propertyData);
+      toast.success('Listing created! Survey request sent to admin. ✓');
+      setIsAddPropertyModalOpen(false);
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      toast.error('Failed to create listing');
+      console.error(err);
+    }
+  };
+
   const handleRequestSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
@@ -385,6 +400,12 @@ const OwnerDashboard = ({ data, onRefresh }) => {
           <p className="text-slate-500 dark:text-slate-400 mt-1">Real-time performance metrics for your portfolio.</p>
         </div>
         <div className="flex gap-3">
+          <Button 
+            className="bg-white text-slate-900 border-slate-200 shadow-sm"
+            onClick={() => setIsAddPropertyModalOpen(true)}
+          >
+            <Plus size={18} className="mr-2" /> Add Asset
+          </Button>
           <Button 
             className="premium-gradient text-white border-0 shadow-lg shadow-primary/20"
             onClick={() => setIsModalOpen(true)}
@@ -1371,6 +1392,13 @@ const OwnerDashboard = ({ data, onRefresh }) => {
 
       {/* Floating Chat Button & Window */}
       <SupportChat initialMessages={data?.messages || []} userId={data?.userId} />
+
+      {/* Add Property Modal */}
+      <AddPropertyModal 
+        isOpen={isAddPropertyModalOpen}
+        onClose={() => setIsAddPropertyModalOpen(false)}
+        onSubmit={handleAddProperty}
+      />
     </div>
   );
 };
