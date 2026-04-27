@@ -74,25 +74,16 @@ const RenterDashboard = ({ data }) => {
   const [loadingTours, setLoadingTours] = useState(false);
 
   React.useEffect(() => {
-    if (data?.maintenanceTickets) {
-      setTickets(data.maintenanceTickets);
+    if (data) {
+      if (data.maintenanceTickets) setTickets(data.maintenanceTickets);
+      if (data.workflowRequests) {
+        setTourRequests(data.workflowRequests.filter(r => r.type === 'TOUR_REQUEST'));
+      }
     }
-    fetchTours();
   }, [data]);
 
   const fetchTours = async () => {
-    try {
-      setLoadingTours(true);
-      // We'll need an endpoint to get user's own workflow requests
-      // For now, we can filter them if we had a general get requests, or just use a specific one
-      const response = await workflowService.getAdminRequests(); 
-      // In a real app, backend should filter by user. For now, we filter frontend.
-      setTourRequests(response.filter(r => r.requester?._id === data.userId || r.requester === data.userId));
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingTours(false);
-    }
+    // tours are now synced via the data prop
   };
 
   const handleConfirmTour = async (id) => {

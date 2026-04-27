@@ -76,6 +76,8 @@ const maintenanceController = {
 
           // Notify Admins
           io.emit('admin_notification', { ...payload, type: 'MAINTENANCE_ALERT' });
+          io.emit('new_ticket', payload);
+          io.emit('new_workflow_request', payload); // So admin workflow section also refreshes if it shows these
 
           // Notify specific assigned provider (if set)
           if (savedTicket.assignedTo) {
@@ -111,24 +113,56 @@ const maintenanceController = {
       if (assignedTo) ticket.assignedTo = assignedTo;
 
       const updatedTicket = await ticket.save();
+      const populatedTicket = await MaintenanceTicket.findById(updatedTicket._id)
+        .populate('property')
+        .populate('renter')
+        .populate('assignedTo');
 
-      // ── Notify Provider if assigned ──────────────────────
+      // ── Notify Involved Parties ────────────────────────────
       try {
-        if (assignedTo) {
-          const io = req.app.get('io');
-          if (io) {
+        const io = req.app.get('io');
+        if (io) {
+          const message = status === 'IN_PROGRESS' 
+            ? `Your maintenance request for ${populatedTicket.property?.title} is now in progress.`
+            : status === 'RESOLVED'
+            ? `Your maintenance request for ${populatedTicket.property?.title} has been resolved.`
+            : status === 'OPEN' && assignedTo
+            ? `A technician has been assigned to your request for ${populatedTicket.property?.title}.`
+            : `Status updated for ${populatedTicket.property?.title}: ${status}`;
+
+          const notificationData = {
+            ticketId: updatedTicket._id,
+            status: updatedTicket.status,
+            message,
+            property: populatedTicket.property?.title
+          };
+
+          // Notify Renter
+          if (populatedTicket.renter) {
+            io.to(String(populatedTicket.renter._id || populatedTicket.renter)).emit('request_update', notificationData);
+          }
+
+          // Notify Owner
+          if (populatedTicket.property?.owner) {
+            io.to(String(populatedTicket.property.owner)).emit('request_update', notificationData);
+          }
+
+          // Notify Provider if assigned
+          if (assignedTo) {
             io.to(String(assignedTo)).emit('new_task', {
               type: 'MAINTENANCE',
               title: 'New Maintenance Assigned',
-              message: `Admin assigned you to a ticket.`,
+              message: `Admin assigned you to a ticket: ${populatedTicket.property?.title}`,
               ticketId: updatedTicket._id
             });
           }
         }
-      } catch (err) {}
+      } catch (err) {
+        console.error('[Socket] Update notification error:', err);
+      }
       // ────────────────────────────────────────────────────────
 
-      res.status(200).json(updatedTicket);
+      res.status(200).json(populatedTicket);
     } catch (error) {
       res.status(500).json({ message: error.message });
     }

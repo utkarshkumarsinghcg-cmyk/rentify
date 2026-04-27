@@ -53,6 +53,10 @@ const dashboardController = {
         $or: [{ sender: ownerId }, { receiver: ownerId }]
       }).populate('sender receiver').sort({ timestamp: -1 }).limit(20);
 
+      // 6. Workflow Requests
+      const WorkflowRequest = require('../models/WorkflowRequest');
+      const workflowRequests = await WorkflowRequest.find({ requester: ownerId }).populate('property').sort({ createdAt: -1 });
+
       res.status(200).json({
         analytics: {
           totalRevenue,
@@ -62,6 +66,7 @@ const dashboardController = {
         },
         properties: properties.slice(0, 5),
         maintenanceTickets,
+        workflowRequests,
         messages,
         userId: ownerId
       });
@@ -101,9 +106,14 @@ const dashboardController = {
       // 3. Suggested Properties
       const properties = await Property.find({ isAvailable: true }).limit(2);
 
+      // 4. Workflow Requests (Tour Requests)
+      const WorkflowRequest = require('../models/WorkflowRequest');
+      const workflowRequests = await WorkflowRequest.find({ requester: renterId }).populate('property').sort({ createdAt: -1 });
+
       res.status(200).json({
         lease,
         maintenanceTickets,
+        workflowRequests,
         properties,
         userId: renterId
       });

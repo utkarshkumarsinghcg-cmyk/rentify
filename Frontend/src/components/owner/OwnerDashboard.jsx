@@ -98,21 +98,30 @@ const OwnerDashboard = ({ data, onRefresh }) => {
         })).reverse()
       );
       
-      setRequests(
-        (data.maintenanceTickets || []).map(t => ({
-          id: t._id?.toString().slice(-6).toUpperCase() || 'N/A',
-          type: 'Maintenance',
-          property: t.property?.title || 'Unknown Property',
-          status: t.status === 'OPEN' ? 'Pending' : t.status === 'IN_PROGRESS' ? 'In Progress' : 'Completed',
-          date: new Date(t.createdAt).toISOString().split('T')[0],
-          assigned: t.assignedTo?.name || 'TBD',
-          assignedToId: t.assignedTo?._id,
-          providerPhone: t.assignedTo?.phone,
-          providerRating: t.assignedTo?.rating,
-          priority: t.priority,
-          rawId: t._id
-        }))
-      );
+      const maintenance = (data.maintenanceTickets || []).map(t => ({
+        id: t._id?.toString().slice(-6).toUpperCase() || 'N/A',
+        type: 'Maintenance',
+        property: t.property?.title || 'Unknown Property',
+        status: t.status === 'OPEN' ? 'Pending' : t.status === 'IN_PROGRESS' ? 'In Progress' : 'Completed',
+        date: new Date(t.createdAt).toISOString().split('T')[0],
+        assigned: t.assignedTo?.name || 'TBD',
+        assignedToId: t.assignedTo?._id,
+        priority: t.priority,
+        rawId: t._id
+      }));
+
+      const workflows = (data.workflowRequests || []).map(w => ({
+        id: w._id?.toString().slice(-6).toUpperCase() || 'N/A',
+        type: w.type === 'LEASE_APPROVAL' ? 'Listing Request' : w.type.replace('_', ' '),
+        property: w.property?.title || 'Listing',
+        status: w.status === 'PENDING' ? 'Awaiting Review' : w.status === 'ASSIGNED' ? 'In Inspection' : w.status === 'COMPLETED' ? 'Live' : w.status,
+        date: new Date(w.createdAt).toISOString().split('T')[0],
+        assigned: w.assignedInspector?.name || 'Admin',
+        priority: 'MEDIUM',
+        rawId: w._id
+      }));
+
+      setRequests([...maintenance, ...workflows]);
     }
   }, [data]);
 
