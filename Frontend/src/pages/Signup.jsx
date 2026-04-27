@@ -105,16 +105,16 @@ const Signup = () => {
       
       const backendRole = response.user.role;
       const routeMap = {
-        'RENTER': 'renter',
+        'RENTER': 'tenant',
         'OWNER': 'owner',
         'SERVICE': 'service',
         'INSPECTOR': 'inspector',
         'ADMIN': 'admin'
       };
-      const dashboardPrefix = routeMap[backendRole] || 'renter';
+      const dashboardPrefix = routeMap[backendRole] || 'tenant';
       
       dispatch(loginSuccess({ user: response.user, token: response.token }));
-      localStorage.setItem('rentify_user_role', backendRole.toLowerCase());
+      localStorage.setItem('rentify_user_role', backendRole.toLowerCase() === 'renter' ? 'tenant' : backendRole.toLowerCase());
       
       toast.success('Welcome to SmartRent! 🎉');
       navigate(`/${dashboardPrefix}-dashboard`);
