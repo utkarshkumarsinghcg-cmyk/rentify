@@ -24,14 +24,14 @@ const Dashboard = () => {
   const [inspectorData, setInspectorData] = React.useState(null);
   const [adminData, setAdminData] = React.useState(null);
   
-  const [loading, setLoading] = React.useState(['owner', 'renter', 'service', 'inspector', 'admin'].includes(resolvedRole));
+  const [loading, setLoading] = React.useState(['owner', 'renter', 'tenant', 'service', 'service_provider', 'inspector', 'admin'].includes(resolvedRole));
 
   const fetchData = async () => {
     try {
       if (resolvedRole === 'owner') {
         const result = await propertyService.getOwnerDashboard();
         setOwnerData(result);
-      } else if (resolvedRole === 'renter') {
+      } else if (resolvedRole === 'renter' || resolvedRole === 'tenant') {
         const result = await propertyService.getRenterDashboard();
         setRenterData(result);
       } else if (resolvedRole === 'service' || resolvedRole === 'service_provider') {
