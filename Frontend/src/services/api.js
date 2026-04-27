@@ -2,9 +2,14 @@ import axios from 'axios';
 import { getStorage } from '../utils/storage';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5001/api',
   timeout: 10000,
 });
+
+// Debug helper: Log the API URL being used in production if it's still localhost
+if (import.meta.env.PROD && api.defaults.baseURL.includes('localhost')) {
+  console.warn('⚠️ WARNING: Frontend is running in production but VITE_API_URL is still pointing to localhost. API calls will likely fail.');
+}
 
 api.interceptors.request.use(
   (config) => {

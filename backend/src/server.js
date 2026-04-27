@@ -27,7 +27,10 @@ const CLIENT_ORIGIN = process.env.CLIENT_URL || 'http://localhost:5173';
 
 // ── Socket.io setup ──────────────────────────────────────────
 const io = new Server(httpServer, {
-  cors: { origin: true, credentials: true }
+  cors: { 
+    origin: [CLIENT_ORIGIN, 'http://localhost:5173', 'http://localhost:3000'], 
+    credentials: true 
+  }
 });
 
 // Attach io to app so controllers can access it
@@ -51,7 +54,10 @@ io.on('connection', (socket) => {
 // ─────────────────────────────────────────────────────────────
 
 app.use(helmet());
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({ 
+  origin: [CLIENT_ORIGIN, 'http://localhost:5173', 'http://localhost:3000'], 
+  credentials: true 
+}));
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
