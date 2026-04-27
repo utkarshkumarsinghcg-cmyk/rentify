@@ -5,9 +5,10 @@ const { generateToken } = require('../utils/jwt');
 exports.register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
+    const normalizedEmail = email.toLowerCase().trim();
     
     // Check if user exists
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ email: normalizedEmail });
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
     }
@@ -16,7 +17,7 @@ exports.register = async (req, res) => {
     
     const user = await User.create({
       name,
-      email,
+      email: normalizedEmail,
       passwordHash,
       role
     });
@@ -39,7 +40,8 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password, role } = req.body;
-    const user = await User.findOne({ email });
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await User.findOne({ email: normalizedEmail });
     
     if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
       return res.status(401).json({ error: 'Invalid credentials' });
