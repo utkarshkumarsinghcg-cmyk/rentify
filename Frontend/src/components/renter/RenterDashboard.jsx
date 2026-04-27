@@ -109,7 +109,7 @@ const RenterDashboard = ({ data }) => {
     const handleUpdate = (e) => {
       const { ticketId, status } = e.detail;
       setTickets(prev => prev.map(t => 
-        t._id?.toString().slice(-6).toUpperCase() === ticketId || t.id === ticketId
+        (t._id?.toString().slice(-6).toUpperCase() === ticketId || t.id === ticketId)
           ? { ...t, status }
           : t
       ));
@@ -327,7 +327,7 @@ const RenterDashboard = ({ data }) => {
                     className="p-4 border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-all flex items-center justify-between group cursor-pointer"
                     onClick={() => {
                       setSelectedTicket({
-                        id: ticket._id.toString().slice(-6).toUpperCase(),
+                        id: ticket._id?.toString().slice(-6).toUpperCase() || 'N/A',
                         title: ticket.title,
                         status: ticket.status === 'OPEN' ? 'Pending' : ticket.status === 'IN_PROGRESS' ? 'In Progress' : 'Resolved', 
                         date: new Date(ticket.createdAt).toLocaleDateString(),
@@ -344,7 +344,7 @@ const RenterDashboard = ({ data }) => {
                       </div>
                       <div>
                         <div className="font-bold text-slate-900 dark:text-white text-sm">{ticket.title}</div>
-                        <div className="text-slate-400 dark:text-slate-500 text-xs mt-1">Ticket #{ticket._id.toString().slice(-6).toUpperCase()} • Reported {new Date(ticket.createdAt).toLocaleDateString()}</div>
+                        <div className="text-slate-400 dark:text-slate-500 text-xs mt-1">Ticket #{ticket._id?.toString().slice(-6).toUpperCase() || 'N/A'} • Reported {new Date(ticket.createdAt).toLocaleDateString()}</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-6">

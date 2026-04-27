@@ -74,6 +74,7 @@ const propertyController = {
             message: `Owner listed a new property. Survey required.`,
             workflowId: workflowReq._id
           });
+          io.emit('new_workflow_request', workflowReq);
         }
       } catch (err) {}
       // ────────────────────────────────────────────────────────

@@ -13,7 +13,7 @@ const propertySchema = new mongoose.Schema({
     enum: ['APARTMENT', 'HOUSE', 'STUDIO', 'VILLA'], 
     default: 'APARTMENT' 
   },
-  isAvailable: { type: Boolean, default: true },
+  isAvailable: { type: Boolean, default: false },
   status: { 
     type: String, 
     enum: ['AVAILABLE', 'PENDING_INSPECTION', 'INSPECTED', 'BOOKED'], 

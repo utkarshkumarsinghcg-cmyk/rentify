@@ -129,6 +129,8 @@ const AdminDashboard = ({ data, onRefresh }) => {
         desc: t.description
       })) || []);
       setAlertsCount(data.stats?.alerts || 0);
+      if (data.workflowRequests) setWorkflowRequests(data.workflowRequests);
+      if (data.recentTickets) setMaintenanceTickets(data.recentTickets);
     }
   }, [data]);
 

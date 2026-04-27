@@ -11,7 +11,7 @@ const ROLES = [
   { id: 'RENTER', title: 'Tenant', icon: User, desc: 'Find and rent your perfect home' },
   { id: 'SERVICE', title: 'Service Provider', icon: Wrench, desc: 'Offer maintenance services' },
   { id: 'INSPECTOR', title: 'Inspector', icon: Search, desc: 'Conduct property inspections' },
-  { id: 'ADMIN', title: 'Admin', icon: ShieldCheck, desc: 'Platform management (requires code)' }
+  { id: 'ADMIN', title: 'Admin', icon: ShieldCheck, desc: 'Platform management' }
 ];
 
 const Signup = () => {
@@ -89,11 +89,6 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.role === 'ADMIN' && formData.roleInfo.adminCode !== 'RENTIFY2024') {
-      toast.error('Invalid admin code');
-      return;
-    }
-
     setLoading(true);
     try {
       const response = await authService.register({
@@ -263,17 +258,6 @@ const Signup = () => {
 
             {step === 3 && (
               <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
-                {formData.role === 'ADMIN' && (
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Admin Access Code</label>
-                    <input
-                      type="text"
-                      onChange={(e) => setFormData({...formData, roleInfo: { adminCode: e.target.value }})}
-                      className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:border-indigo-500 outline-none dark:text-white"
-                      placeholder="Enter secret code"
-                    />
-                  </div>
-                )}
                 {/* Other roles mock fields for UI completeness */}
                 {formData.role === 'SERVICE' && (
                   <div>

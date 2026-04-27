@@ -100,7 +100,7 @@ const OwnerDashboard = ({ data, onRefresh }) => {
       
       setRequests(
         (data.maintenanceTickets || []).map(t => ({
-          id: t._id.toString().slice(-6).toUpperCase(),
+          id: t._id?.toString().slice(-6).toUpperCase() || 'N/A',
           type: 'Maintenance',
           property: t.property?.title || 'Unknown Property',
           status: t.status === 'OPEN' ? 'Pending' : t.status === 'IN_PROGRESS' ? 'In Progress' : 'Completed',

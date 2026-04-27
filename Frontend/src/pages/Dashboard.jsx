@@ -60,12 +60,14 @@ const Dashboard = () => {
       socket.on('new_task', fetchData);
       socket.on('new_ticket', fetchData);
       socket.on('admin_notification', fetchData);
+      socket.on('new_workflow_request', fetchData);
 
       return () => {
         socket.off('request_update', fetchData);
         socket.off('new_task', fetchData);
         socket.off('new_ticket', fetchData);
         socket.off('admin_notification', fetchData);
+        socket.off('new_workflow_request', fetchData);
       };
     }
   }, [resolvedRole]);

@@ -59,10 +59,18 @@ const InspectorDashboard = ({ data, onRefresh }) => {
           inspectionService.getInspections()
         ]);
         
-        // Filter workflow requests assigned to this inspector (we'll assume userId is available or filter by name)
-        // For now, showing all LEASE_APPROVAL that are ASSIGNED
-        setInspections(wRequests.filter(r => r.type === 'LEASE_APPROVAL' && r.status === 'ASSIGNED'));
-        setHistory(wRequests.filter(r => r.status === 'COMPLETED'));
+        // Filter workflow requests assigned to this inspector
+        const assignedToMe = wRequests.filter(r => 
+          r.type === 'LEASE_APPROVAL' && 
+          r.status === 'ASSIGNED' && 
+          (String(r.assignedInspector?._id || r.assignedInspector) === String(data.userId))
+        );
+        
+        setInspections(assignedToMe);
+        setHistory(wRequests.filter(r => 
+          r.status === 'COMPLETED' && 
+          (String(r.assignedInspector?._id || r.assignedInspector) === String(data.userId))
+        ));
       } catch (err) {
         console.error(err);
       }
@@ -268,12 +276,12 @@ const InspectorDashboard = ({ data, onRefresh }) => {
                       <button onClick={(e) => { e.stopPropagation(); setMenuOpenId(menuOpenId === item._id ? null : item._id); }} className="p-2 text-slate-300 hover:text-blue-600 transition-colors">
                         {(item.status === 'Completed' || item.status === 'RESOLVED') ? <CheckCircle size={18} className="text-emerald-500" /> : <MoreVertical size={18} />}
                       </button>
-                      {menuOpenId === item.id && (
+                      {menuOpenId === item._id && (
                         <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 py-1 z-10">
-                          <button onClick={() => handleAction('start', item)} className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700">Start Inspection</button>
+                          <button onClick={() => handleAction('start', item)} className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700">Survey Property</button>
                           <button onClick={() => handleAction('reschedule', item)} className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700">Reschedule</button>
                           {item.status !== 'Completed' && (
-                            <button onClick={() => handleAction('complete', item)} className="w-full text-left px-4 py-2 text-sm font-bold text-emerald-600 hover:bg-slate-50 dark:hover:bg-slate-700">Mark Complete</button>
+                            <button onClick={() => handleAction('complete', item)} className="w-full text-left px-4 py-2 text-sm font-bold text-emerald-600 hover:bg-slate-50 dark:hover:bg-slate-700">List Property</button>
                           )}
                           <button onClick={() => handleAction('details', item)} className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700">View Details</button>
                         </div>
