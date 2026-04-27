@@ -155,22 +155,21 @@ const ServiceDashboard = ({ data }) => {
       // Increment new jobs counter on metric card
       setNewJobsCount(prev => prev + 1);
 
-      // Prepend to requests list as a new available job
-      const newJob = {
-        _id: ticket.ticketId || `rt-${Date.now()}`,
+      // If assigned directly (common in admin-assigned model), add to schedule
+      const schedItem = {
+        _id: ticket.ticketId || `sch-${Date.now()}`,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         title: ticket.title,
-        type: ticket.category,
-        iconColor: 'text-rose-600 bg-rose-50 dark:bg-rose-900/20',
+        color: 'bg-primary',
         property: { title: ticket.property, address: ticket.property },
-        urgency: ticket.priority,
-        urgencyColor: ticket.priority === 'HIGH' || ticket.priority === 'URGENT'
-          ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-          : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-        estimate: 'TBD',
-        status: 'Available',
+        type: ticket.category || 'Service Request',
+        status: 'Scheduled',
+        assignedTech: 'Self',
         isNew: true,
       };
-      setLocalRequests(prev => [newJob, ...prev]);
+      
+      setLocalSchedule(prev => [schedItem, ...prev]);
+      setActiveJobsCount(prev => prev + 1);
 
       // Dispatch global event so Navbar notification bell updates
       window.dispatchEvent(new CustomEvent('rentify:new_ticket', { detail: ticket }));
@@ -384,91 +383,93 @@ const ServiceDashboard = ({ data }) => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Main Content Area */}
         <div className="lg:col-span-8 space-y-8">
-          {/* Available Service Requests Table */}
-          <Card className="bg-white dark:bg-slate-900 rounded-2xl border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <h3 className="font-bold text-xl text-slate-900 dark:text-white">Available Service Requests</h3>
-                {newJobsCount > 0 && (
-                  <span className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 text-xs font-black rounded-full animate-pulse">
-                    <span className="w-1.5 h-1.5 bg-rose-500 rounded-full" />
-                    {newJobsCount} new
-                  </span>
-                )}
+          {/* Available Service Requests Table - Hidden for New Users or by Admin Assignment Policy */}
+          {localHistory.length > 0 && (
+            <Card className="bg-white dark:bg-slate-900 rounded-2xl border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+              <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <h3 className="font-bold text-xl text-slate-900 dark:text-white">Available Service Requests</h3>
+                  {newJobsCount > 0 && (
+                    <span className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 text-xs font-black rounded-full animate-pulse">
+                      <span className="w-1.5 h-1.5 bg-rose-500 rounded-full" />
+                      {newJobsCount} new
+                    </span>
+                  )}
+                </div>
+                <button onClick={() => navigate('/service-requests')} className="text-primary font-bold text-sm flex items-center hover:underline">
+                  View All <ArrowRight size={16} className="ml-1" />
+                </button>
               </div>
-              <button onClick={() => navigate('/service-requests')} className="text-primary font-bold text-sm flex items-center hover:underline">
-                View All <ArrowRight size={16} className="ml-1" />
-              </button>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest">
-                  <tr>
-                    <th className="px-6 py-4">Job Type</th>
-                    <th className="px-6 py-4">Property</th>
-                    <th className="px-6 py-4">Urgency</th>
-                    <th className="px-6 py-4">Estimate</th>
-                    <th className="px-6 py-4">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {localRequests.map((job) => (
-                    <tr key={job._id} className={`hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors ${
-                      job.isNew ? 'bg-rose-50/50 dark:bg-rose-900/5 border-l-2 border-rose-400' : ''
-                    }`}>
-                      <td className="px-6 py-5">
-                        <div className="flex items-center">
-                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-3 ${job.iconColor || 'bg-blue-50 text-blue-600'} relative`}>
-                            <Wrench size={20} />
-                            {job.isNew && (
-                              <span className="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900 animate-pulse" />
-                            )}
-                          </div>
-                          <div>
-                            <div className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
-                              {job.title || job.type}
-                              {job.isNew && <span className="px-1.5 py-0.5 bg-rose-100 text-rose-700 text-[9px] font-black rounded uppercase">New</span>}
-                            </div>
-                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">ID: #{String(job._id).slice(-6)}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-5">
-                        <div className="text-sm font-medium text-slate-600 dark:text-slate-400">{job.property?.title || 'Unknown Property'}</div>
-                        <p className="text-[10px] text-slate-400">{job.property?.address}</p>
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); setMiniMapModal(job); }}
-                          className="flex items-center gap-1 text-primary text-[10px] font-black uppercase tracking-widest hover:underline mt-1 group"
-                        >
-                          <MapPin size={10} className="group-hover:translate-y-[-1px] transition-transform" />
-                          Get Directions
-                        </button>
-                      </td>
-                      <td className="px-6 py-5">
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${job.urgencyColor}`}>
-                          {job.urgency}
-                        </span>
-                      </td>
-                      <td className="px-6 py-5 font-bold text-slate-900 dark:text-white">{job.estimate}</td>
-                      <td className="px-6 py-5">
-                        {job.status === 'Accepted' ? (
-                          <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold text-xs bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-lg w-fit">
-                            <CheckCircle size={14} /> Accepted ✓
-                          </span>
-                        ) : job.status === 'Completed' ? (
-                           <span className="text-slate-400 text-xs font-bold uppercase">Completed</span>
-                        ) : (
-                          <Button onClick={() => setAcceptJobModal(job)} className="bg-primary text-white border-0 px-4 py-1.5 rounded-lg text-xs font-bold shadow-sm hover:opacity-90 active:scale-95 transition-all">
-                            Accept Job
-                          </Button>
-                        )}
-                      </td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest">
+                    <tr>
+                      <th className="px-6 py-4">Job Type</th>
+                      <th className="px-6 py-4">Property</th>
+                      <th className="px-6 py-4">Urgency</th>
+                      <th className="px-6 py-4">Estimate</th>
+                      <th className="px-6 py-4">Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {localRequests.map((job) => (
+                      <tr key={job._id} className={`hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors ${
+                        job.isNew ? 'bg-rose-50/50 dark:bg-rose-900/5 border-l-2 border-rose-400' : ''
+                      }`}>
+                        <td className="px-6 py-5">
+                          <div className="flex items-center">
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-3 ${job.iconColor || 'bg-blue-50 text-blue-600'} relative`}>
+                              <Wrench size={20} />
+                              {job.isNew && (
+                                <span className="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900 animate-pulse" />
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+                                {job.title || job.type}
+                                {job.isNew && <span className="px-1.5 py-0.5 bg-rose-100 text-rose-700 text-[9px] font-black rounded uppercase">New</span>}
+                              </div>
+                              <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">ID: #{String(job._id).slice(-6)}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="text-sm font-medium text-slate-600 dark:text-slate-400">{job.property?.title || 'Unknown Property'}</div>
+                          <p className="text-[10px] text-slate-400">{job.property?.address}</p>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setMiniMapModal(job); }}
+                            className="flex items-center gap-1 text-primary text-[10px] font-black uppercase tracking-widest hover:underline mt-1 group"
+                          >
+                            <MapPin size={10} className="group-hover:translate-y-[-1px] transition-transform" />
+                            Get Directions
+                          </button>
+                        </td>
+                        <td className="px-6 py-5">
+                          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${job.urgencyColor}`}>
+                            {job.urgency}
+                          </span>
+                        </td>
+                        <td className="px-6 py-5 font-bold text-slate-900 dark:text-white">{job.estimate}</td>
+                        <td className="px-6 py-5">
+                          {job.status === 'Accepted' ? (
+                            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold text-xs bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-lg w-fit">
+                              <CheckCircle size={14} /> Accepted ✓
+                            </span>
+                          ) : job.status === 'Completed' ? (
+                            <span className="text-slate-400 text-xs font-bold uppercase">Completed</span>
+                          ) : (
+                            <Button onClick={() => setAcceptJobModal(job)} className="bg-primary text-white border-0 px-4 py-1.5 rounded-lg text-xs font-bold shadow-sm hover:opacity-90 active:scale-95 transition-all">
+                              Accept Job
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          )}
 
           {/* Map Section */}
           <Card className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border-slate-100 dark:border-slate-800 mt-8 relative z-0">
@@ -659,7 +660,10 @@ const ServiceDashboard = ({ data }) => {
                       } rounded-full shadow-lg transition-transform group-hover:scale-y-110 shrink-0`} />
                       <div className="flex-1 min-w-0">
                         <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{displayTime}</div>
-                        <div className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors truncate">{item.title}</div>
+                        <div className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors truncate flex items-center gap-2">
+                          {item.title}
+                          {item.isNew && <span className="px-1.5 py-0.5 bg-rose-100 text-rose-700 text-[8px] font-black rounded uppercase animate-pulse">New</span>}
+                        </div>
                         {propName && <div className="text-[10px] text-slate-400 truncate">{propName}</div>}
                       </div>
                       <div className="shrink-0 flex flex-col items-end gap-1">
@@ -694,16 +698,8 @@ const ServiceDashboard = ({ data }) => {
             </div>
             <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Accept Job?</h3>
             <p className="text-slate-500 text-sm mb-4">Are you sure you want to accept <strong>{acceptJobModal.title || acceptJobModal.type}</strong> at <strong>{acceptJobModal.property?.title || acceptJobModal.property || 'this property'}</strong>?</p>
-            <div className="mb-6 text-left">
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Assign To</label>
-              <select
-                value={assignedTech}
-                onChange={e => setAssignedTech(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500 dark:text-white">
-                {['Self', 'Suresh Plumber', 'Ravi Electrician', 'Mohan HVAC', 'Deepak Carpenter', 'Amit Painter'].map(t => (
-                  <option key={t}>{t}</option>
-                ))}
-              </select>
+            <div className="mb-6">
+              {/* Assign To selection removed per user request */}
             </div>
             <div className="flex gap-3">
               <Button onClick={() => setAcceptJobModal(null)} variant="outline" className="flex-1 rounded-xl">Cancel</Button>

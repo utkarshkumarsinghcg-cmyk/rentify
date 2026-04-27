@@ -41,7 +41,7 @@ const Navbar = () => {
   const [adminSearchQuery, setAdminSearchQuery] = useState('');
 
   const isHomePage = location.pathname === '/' || location.pathname === '/home';
-  const role = localStorage.getItem('rentify_user_role') || user?.role?.toLowerCase() || 'renter';
+  const role = localStorage.getItem('rentify_user_role') || user?.role?.toLowerCase() || 'tenant';
   const dashboardLink = `/${role}-dashboard`;
 
   useEffect(() => {
