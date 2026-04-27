@@ -16,6 +16,7 @@ import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import L from 'leaflet';
 import { getSocket, joinUserRoom } from '../../services/socket';
 import PointsBreakdown from '../rewards/PointsBreakdown';
+import maintenanceService from '../../services/maintenanceService';
 
 const createCustomIcon = (color) => {
   return L.divIcon({
@@ -45,7 +46,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-const ServiceDashboard = ({ data }) => {
+const ServiceDashboard = ({ data, onRefresh }) => {
   const navigate = useNavigate();
 
   const [localRequests, setLocalRequests] = useState([]);
@@ -185,38 +186,16 @@ const ServiceDashboard = ({ data }) => {
   }, [data]);
   // ──────────────────────────────────────────────────────────────
 
-  const handleAcceptJob = () => {
+  const handleAcceptJob = async () => {
     const job = acceptJobModal;
-    setLocalRequests(prev => prev.map(r => r._id === job._id ? { ...r, status: 'Accepted' } : r));
-    const schedItem = {
-      _id: `sch-new-${Date.now()}`,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      title: job.title || job.type,
-      color: 'bg-primary',
-      property: job.property,
-      type: job.type || 'Service Request',
-      status: 'Scheduled',
-      assignedTech,
-      lat: job.lat,
-      lng: job.lng,
-    };
-    setLocalSchedule(prev => [...prev, schedItem]);
-    setActiveJobsCount(prev => prev + 1);
-    toast.success(`Job Accepted! Assigned to ${assignedTech} ✓`, { style: { background: '#333', color: '#fff', borderRadius: '10px' } });
-
-    // Notify Owner Dashboard
-    window.dispatchEvent(new CustomEvent('rentify:ticket_update', {
-      detail: {
-        ticketId: job._id,
-        status: 'Accepted',
-        assignedTech,
-        type: job.type || 'Maintenance',
-        property: job.property?.title || job.property || 'Your Property',
-      }
-    }));
-
+    try {
+      await maintenanceService.updateStatus(job._id, { status: 'IN_PROGRESS' }); // Mark as in-progress when accepted
+      toast.success(`Job Accepted! ✓`, { style: { background: '#333', color: '#fff', borderRadius: '10px' } });
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      toast.error('Failed to accept job');
+    }
     setAcceptJobModal(null);
-    setAssignedTech('Self');
   };
 
   const handleOpenDirections = (address) => {
@@ -877,58 +856,28 @@ const ServiceDashboard = ({ data }) => {
             </div>
 
             <div className="flex flex-col gap-3">
-              {scheduleDetailModal.status === 'Scheduled' && (
-                <Button onClick={() => {
-                  setLocalSchedule(prev => prev.map(s => s._id === scheduleDetailModal._id ? { ...s, status: 'In Progress' } : s));
-                  setScheduleDetailModal(s => ({ ...s, status: 'In Progress' }));
-                  toast.success('Job started! Timer running ⏱️');
-
-                  // Notify Owner Dashboard
-                  window.dispatchEvent(new CustomEvent('rentify:ticket_update', {
-                    detail: {
-                      ticketId: scheduleDetailModal._id,
-                      status: 'In Progress',
-                      assignedTech: scheduleDetailModal.assignedTech || 'Self',
-                      type: scheduleDetailModal.type,
-                      property: scheduleDetailModal.property?.title || scheduleDetailModal.property || 'Your Property',
-                    }
-                  }));
+              {(scheduleDetailModal.status === 'Scheduled' || scheduleDetailModal.status === 'OPEN') && (
+                <Button onClick={async () => {
+                  try {
+                    await maintenanceService.updateStatus(scheduleDetailModal._id, { status: 'IN_PROGRESS' });
+                    toast.success('Job started! Timer running ⏱️');
+                    if (onRefresh) onRefresh();
+                    setScheduleDetailModal(null);
+                  } catch (err) {
+                    toast.error('Failed to update status');
+                  }
                 }} className="w-full bg-primary text-white border-0 py-3 rounded-xl">Start Job</Button>
               )}
-              {scheduleDetailModal.status === 'In Progress' && (
-                <Button onClick={() => {
-                  const completed = scheduleDetailModal;
-                  setLocalSchedule(prev => prev.filter(s => s._id !== completed._id));
-                  setActiveJobsCount(prev => Math.max(0, prev - 1));
-                  const earnings = '+₹' + (Math.floor(Math.random() * 8000) + 2000).toLocaleString('en-IN');
-                  const historyEntry = {
-                    _id: completed._id,
-                    title: completed.title,
-                    date: new Date().toLocaleDateString('en-IN'),
-                    desc: `${completed.type} completed at ${completed.property?.title || completed.property || 'property'}.`,
-                    amount: earnings,
-                    rating: 5,
-                    status: 'Completed',
-                    type: completed.type,
-                    cost: String(Math.floor(Math.random() * 8000) + 2000),
-                    assignedTech: completed.assignedTech || 'Self',
-                  };
-                  setLocalHistory(prev => [historyEntry, ...prev]);
-                  toast.success('Job complete! Added to history 💰', { icon: '✅' });
-
-                  // Notify Owner Dashboard
-                  window.dispatchEvent(new CustomEvent('rentify:ticket_update', {
-                    detail: {
-                      ticketId: completed._id,
-                      status: 'Completed',
-                      assignedTech: completed.assignedTech || 'Self',
-                      type: completed.type,
-                      property: completed.property?.title || completed.property || 'Your Property',
-                      earnings,
-                    }
-                  }));
-
-                  setScheduleDetailModal(null);
+              {(scheduleDetailModal.status === 'In Progress' || scheduleDetailModal.status === 'IN_PROGRESS') && (
+                <Button onClick={async () => {
+                  try {
+                    await maintenanceService.updateStatus(scheduleDetailModal._id, { status: 'RESOLVED' });
+                    toast.success('Job complete! Added to history 💰', { icon: '✅' });
+                    if (onRefresh) onRefresh();
+                    setScheduleDetailModal(null);
+                  } catch (err) {
+                    toast.error('Failed to complete job');
+                  }
                 }} className="w-full bg-emerald-500 text-white border-0 py-3 rounded-xl">Mark Complete</Button>
               )}
               <Button onClick={() => handleOpenDirections(scheduleDetailModal.property?.address || scheduleDetailModal.property?.title || scheduleDetailModal.property)} variant="outline" className="w-full py-3 rounded-xl border-slate-200 flex justify-center items-center gap-2"><MapPin size={16}/> Get Directions</Button>

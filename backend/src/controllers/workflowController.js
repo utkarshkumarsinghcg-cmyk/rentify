@@ -73,10 +73,19 @@ exports.updateRequestStatus = async (req, res) => {
     try {
       const io = req.app.get('io');
       if (io) {
+        const message = status === 'ASSIGNED' && savedRequest.type === 'LEASE_APPROVAL'
+          ? `An inspector has been assigned to your property: ${request.property?.title}.`
+          : status === 'COMPLETED' && savedRequest.type === 'LEASE_APPROVAL'
+          ? `Your property listing for ${request.property?.title} is now LIVE!`
+          : status === 'ASSIGNED' && savedRequest.type === 'TOUR_REQUEST'
+          ? `Your tour request for ${request.property?.title} has been confirmed.`
+          : `Update for ${request.property?.title}: ${status}`;
+
         io.to(String(request.requester)).emit('request_update', {
           status: savedRequest.status,
           type: savedRequest.type,
-          property: request.property?.title
+          property: request.property?.title,
+          message
         });
         if (assignedInspector) {
           io.to(String(assignedInspector)).emit('new_task', {
