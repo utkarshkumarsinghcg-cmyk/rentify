@@ -5,8 +5,9 @@ import { Send, User, Mail, MessageSquare, Phone } from 'lucide-react';
 import { toast } from 'react-toastify';
 import Input from './Input';
 import Button from './Button';
+import workflowService from '../../services/workflowService';
 
-const ContactForm = ({ propertyTitle = "" }) => {
+const ContactForm = ({ propertyId, propertyTitle = "" }) => {
   const formik = useFormik({
     initialValues: {
       name: '',
@@ -22,13 +23,16 @@ const ContactForm = ({ propertyTitle = "" }) => {
     }),
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       try {
-        // Simulate API call
-        await new Promise(r => setTimeout(r, 1500));
-        console.log('Contact Form Submitted:', values);
-        toast.success('Message sent successfully! We will contact you soon.');
+        if (propertyId) {
+          await workflowService.createRequest('TOUR_REQUEST', propertyId, values.message);
+        } else {
+          // Fallback simulation for general contact
+          await new Promise(r => setTimeout(r, 1000));
+        }
+        toast.success('Tour request sent! Admin will contact you soon.');
         resetForm();
       } catch (error) {
-        toast.error('Failed to send message. Please try again.');
+        toast.error('Failed to send request. Please try again.');
       } finally {
         setSubmitting(false);
       }

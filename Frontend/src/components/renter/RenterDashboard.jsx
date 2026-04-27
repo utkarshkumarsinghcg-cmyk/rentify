@@ -43,6 +43,7 @@ import Button from '../common/Button';
 import NewRequestModal from '../owner/modals/NewRequestModal';
 import chatService from '../../services/chatService';
 import SupportChat from '../common/SupportChat';
+import workflowService from '../../services/workflowService';
 
 const RenterDashboard = ({ data }) => {
   const navigate = useNavigate();
@@ -69,12 +70,40 @@ const RenterDashboard = ({ data }) => {
 
   const [isNewRequestOpen, setIsNewRequestOpen] = useState(false);
   const [tickets, setTickets] = React.useState([]);
+  const [tourRequests, setTourRequests] = useState([]);
+  const [loadingTours, setLoadingTours] = useState(false);
 
   React.useEffect(() => {
     if (data?.maintenanceTickets) {
       setTickets(data.maintenanceTickets);
     }
+    fetchTours();
   }, [data]);
+
+  const fetchTours = async () => {
+    try {
+      setLoadingTours(true);
+      // We'll need an endpoint to get user's own workflow requests
+      // For now, we can filter them if we had a general get requests, or just use a specific one
+      const response = await workflowService.getAdminRequests(); 
+      // In a real app, backend should filter by user. For now, we filter frontend.
+      setTourRequests(response.filter(r => r.requester?._id === data.userId || r.requester === data.userId));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingTours(false);
+    }
+  };
+
+  const handleConfirmTour = async (id) => {
+    try {
+      await workflowService.updateRequest(id, { status: 'CONFIRMED' });
+      toast.success('Interest confirmed! Admin will now finalize the assignment. ✓');
+      fetchTours();
+    } catch (err) {
+      toast.error('Failed to confirm');
+    }
+  };
 
   React.useEffect(() => {
     const handleUpdate = (e) => {
@@ -331,6 +360,62 @@ const RenterDashboard = ({ data }) => {
                 ))
               ) : (
                 <p className="text-slate-500 text-sm font-medium italic">No recent maintenance requests.</p>
+              )}
+            </div>
+          </section>
+
+          {/* Tour Requests / Assignments Flow */}
+          <section>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Property Tour Progress</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {tourRequests.length > 0 ? tourRequests.map(req => (
+                <Card key={req._id} className="p-5 border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm relative overflow-hidden">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h4 className="font-bold text-slate-900 dark:text-white">{req.property?.title}</h4>
+                      <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">{req.status}</p>
+                    </div>
+                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${
+                      req.status === 'DETAILS_SENT' ? 'bg-blue-100 text-blue-600 animate-pulse' : 'bg-slate-100 text-slate-500'
+                    }`}>
+                      {req.status === 'DETAILS_SENT' ? 'Action Required' : 'Processing'}
+                    </span>
+                  </div>
+                  
+                  {req.status === 'DETAILS_SENT' && (
+                    <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                      <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
+                        <p className="text-[10px] font-bold text-blue-600 uppercase mb-1">Admin Note / Location</p>
+                        <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                          {req.notes || "The property details have been sent. Please review the location and confirm if you'd like to proceed with the booking."}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          onClick={() => handleConfirmTour(req._id)}
+                          className="flex-1 bg-primary text-white border-0 text-xs py-2 rounded-lg font-black"
+                        >
+                          Confirm Interest
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {req.status === 'CONFIRMED' && (
+                    <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800">
+                      <p className="text-xs text-amber-700 dark:text-amber-400 font-bold">Waiting for Admin to finalize your lease assignment.</p>
+                    </div>
+                  )}
+                  
+                  {req.status === 'ASSIGNED' && (
+                    <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800 flex items-center gap-2">
+                      <CheckCircle size={14} className="text-green-500" />
+                      <p className="text-xs text-green-700 dark:text-green-400 font-bold">Property Assigned! Check Active Rentals.</p>
+                    </div>
+                  )}
+                </Card>
+              )) : (
+                <p className="text-slate-500 text-sm font-medium italic col-span-2">No active tour requests.</p>
               )}
             </div>
           </section>

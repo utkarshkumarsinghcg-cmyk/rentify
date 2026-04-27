@@ -87,7 +87,7 @@ const ListingDetailModal = ({ isOpen, property, onClose }) => {
             <div className="mb-8">
               <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Contact Agent</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-8">Fill in your details below and the property manager will reach out to you within 24 hours.</p>
-              <ContactForm propertyTitle={property.title} />
+              <ContactForm propertyId={property._id} propertyTitle={property.title} />
             </div>
 
             <div className="pt-8 border-t border-slate-200 dark:border-slate-700">

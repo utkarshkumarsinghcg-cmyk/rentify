@@ -1,4 +1,5 @@
 const Property = require('../models/Property');
+const WorkflowRequest = require('../models/WorkflowRequest');
 
 /**
  * Property Controller
@@ -48,9 +49,19 @@ const propertyController = {
     try {
       const newProperty = new Property({
         ...req.body,
-        owner: req.user.id // Assuming auth middleware sets req.user
+        owner: req.user.id,
+        status: 'PENDING_INSPECTION'
       });
       const savedProperty = await newProperty.save();
+
+      // Create Lease Approval Request for Admin
+      await WorkflowRequest.create({
+        type: 'LEASE_APPROVAL',
+        property: savedProperty._id,
+        requester: req.user.id,
+        notes: 'Owner requested lease approval and inspection.'
+      });
+
       res.status(201).json(savedProperty);
     } catch (error) {
       res.status(400).json({ message: error.message });

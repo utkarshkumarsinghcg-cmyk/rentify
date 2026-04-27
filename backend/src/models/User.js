@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
     default: 'RENTER' 
   },
   phone: { type: String },
+  rating: { type: Number, default: 4.5 },
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

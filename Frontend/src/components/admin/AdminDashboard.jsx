@@ -16,6 +16,7 @@ import maintenanceService from '../../services/maintenanceService';
 import userService from '../../services/userService';
 import chatService from '../../services/chatService';
 import inspectionService from '../../services/inspectionService';
+import workflowService from '../../services/workflowService';
 
 // --- MOCK DATA ---
 const initialEntities = [
@@ -94,6 +95,7 @@ const AdminDashboard = ({ data, onRefresh }) => {
   const [maintenanceTickets, setMaintenanceTickets] = useState([]);
   const [inspectors, setInspectors] = useState([]);
   const [inspectionTasks, setInspectionTasks] = useState([]);
+  const [workflowRequests, setWorkflowRequests] = useState([]);
 
   const [config, setConfig] = useState(() => {
     const saved = localStorage.getItem('rentify_global_config');
@@ -133,18 +135,20 @@ const AdminDashboard = ({ data, onRefresh }) => {
   useEffect(() => {
     const fetchDispatchData = async () => {
       try {
-        const [providers, tickets, insp, tasks, convs] = await Promise.all([
+        const [providers, tickets, insp, tasks, convs, wRequests] = await Promise.all([
           userService.getServiceProviders(),
           maintenanceService.getAllTickets(),
           userService.getInspectors(),
           inspectionService.getInspections(),
-          chatService.getConversations()
+          chatService.getConversations(),
+          workflowService.getAdminRequests()
         ]);
         setServiceProviders(providers);
         setMaintenanceTickets(tickets);
         setInspectors(insp);
         setInspectionTasks(tasks);
         setConversations(convs);
+        setWorkflowRequests(wRequests);
       } catch (err) {
         console.error('Failed to fetch dashboard data', err);
       }
@@ -174,6 +178,18 @@ const AdminDashboard = ({ data, onRefresh }) => {
       if (onRefresh) onRefresh();
     } catch (err) {
       toast.error('Assignment failed');
+    }
+  };
+
+  const handleUpdateWorkflow = async (id, status, extra = {}) => {
+    try {
+      await workflowService.updateRequest(id, { status, ...extra });
+      toast.success('Request updated successfully! ✓');
+      const updated = await workflowService.getAdminRequests();
+      setWorkflowRequests(updated);
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      toast.error('Update failed');
     }
   };
 
@@ -587,51 +603,74 @@ const AdminDashboard = ({ data, onRefresh }) => {
             </div>
           </Card>
 
-          <Card id="inspector-dispatch" className="border-0 shadow-xl bg-white dark:bg-slate-900 rounded-[2.5rem] p-10">
+          <Card id="workflow-control" className="border-0 shadow-xl bg-white dark:bg-slate-900 rounded-[2.5rem] p-10">
             <div className="flex justify-between items-center mb-8">
-              <h3 className="font-black text-xl tracking-tight text-slate-900 dark:text-white">Inspector Dispatch</h3>
-              <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-500 flex items-center justify-center relative">
-                <Search size={18} />
-                {inspectionTasks.filter(t => t.status === 'PENDING').length > 0 && <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full animate-pulse"></div>}
+              <h3 className="font-black text-xl tracking-tight text-slate-900 dark:text-white">Workflow Control</h3>
+              <div className="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-900/20 text-purple-500 flex items-center justify-center relative">
+                <Activity size={18} />
+                {workflowRequests.filter(t => t.status === 'PENDING').length > 0 && <div className="absolute -top-1 -right-1 w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>}
               </div>
             </div>
             <div className="space-y-6">
-              {inspectionTasks.length > 0 ? inspectionTasks.slice(0, 3).map((task) => (
-                <div key={task._id} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-amber-500/50 transition-all group">
+              {workflowRequests.length > 0 ? workflowRequests.slice(0, 5).map((req) => (
+                <div key={req._id} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-purple-500/50 transition-all group">
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <div className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">{task.type}</div>
-                      <h4 className="font-bold text-slate-900 dark:text-white text-xs truncate max-w-[150px]">{task.property?.title}</h4>
+                      <div className="text-[10px] font-black text-purple-600 uppercase tracking-widest mb-1">{req.type.replace('_', ' ')}</div>
+                      <h4 className="font-bold text-slate-900 dark:text-white text-xs truncate max-w-[150px]">{req.property?.title}</h4>
+                      <p className="text-[10px] text-slate-500 mt-0.5">By: {req.requester?.name}</p>
                     </div>
-                    {task.inspector ? (
-                      <div className="flex flex-col items-end">
-                        <span className="text-[10px] font-black text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-md uppercase">Scheduled</span>
-                        <span className="text-[9px] font-bold text-slate-400 mt-1">{task.inspector.name}</span>
-                      </div>
-                    ) : (
-                      <span className="text-[10px] font-black text-rose-600 bg-rose-50 dark:bg-rose-900/20 px-2 py-0.5 rounded-md uppercase">Needs Assignment</span>
-                    )}
+                    <span className={`text-[9px] font-black px-2 py-0.5 rounded-md uppercase ${
+                      req.status === 'PENDING' ? 'bg-amber-50 text-amber-600' : 
+                      req.status === 'ASSIGNED' ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'
+                    }`}>
+                      {req.status}
+                    </span>
                   </div>
-                  <div className="flex items-center justify-between gap-4 mt-4 pt-4 border-t border-slate-200/50 dark:border-slate-700/50">
-                    <div className="flex -space-x-2">
-                       {inspectors.slice(0, 3).map(p => (
-                         <img key={p._id} src={`https://i.pravatar.cc/100?u=${p._id}`} className="w-6 h-6 rounded-full border-2 border-white dark:border-slate-900 object-cover" title={p.name} />
-                       ))}
-                    </div>
-                    <select 
-                      className="bg-white dark:bg-slate-900 text-[9px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer"
-                      value={task.inspector?._id || ''}
-                      onChange={(e) => handleAssignInspector(task._id, e.target.value)}
-                    >
-                      <option value="">{task.inspector ? 'Reassign' : 'Assign Inspector'}</option>
-                      {inspectors.map(p => (
-                        <option key={p._id} value={p._id}>{p.name}</option>
-                      ))}
-                    </select>
+                  
+                  <div className="flex items-center gap-2 mt-4">
+                    {req.type === 'LEASE_APPROVAL' && req.status === 'PENDING' && (
+                      <select 
+                        className="flex-1 bg-white dark:bg-slate-900 text-[9px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 outline-none"
+                        onChange={(e) => handleUpdateWorkflow(req._id, 'ADMIN_REVIEWED', { assignedInspector: e.target.value })}
+                      >
+                        <option value="">Assign Inspector</option>
+                        {inspectors.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
+                      </select>
+                    )}
+                    
+                    {req.type === 'TOUR_REQUEST' && (
+                      <div className="flex gap-2 w-full">
+                        {req.status === 'PENDING' && (
+                          <Button 
+                            onClick={() => handleUpdateWorkflow(req._id, 'DETAILS_SENT')}
+                            variant="primary" className="flex-1 text-[9px] py-1.5 rounded-lg font-black"
+                          >
+                            Send Details
+                          </Button>
+                        )}
+                        {req.status === 'DETAILS_SENT' && (
+                          <Button 
+                            onClick={() => handleUpdateWorkflow(req._id, 'CONFIRMED')}
+                            variant="outline" className="flex-1 text-[9px] py-1.5 rounded-lg font-black"
+                          >
+                            Wait Confirm
+                          </Button>
+                        )}
+                        {req.status === 'CONFIRMED' && (
+                          <Button 
+                            onClick={() => handleUpdateWorkflow(req._id, 'ASSIGNED')}
+                            className="flex-1 bg-green-600 text-white text-[9px] py-1.5 rounded-lg font-black"
+                          >
+                            Assign Property
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )) : (
-                <div className="text-center py-10 text-slate-400 font-bold italic">Queue is clear</div>
+                <div className="text-center py-10 text-slate-400 font-bold italic">No active workflows</div>
               )}
             </div>
           </Card>

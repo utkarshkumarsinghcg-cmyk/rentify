@@ -104,7 +104,11 @@ const ListingPage = () => {
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                   <div className="absolute top-4 left-4 flex gap-2">
-                    {property.verified && (
+                    {property.status === 'BOOKED' ? (
+                      <span className="bg-rose-500 text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-lg">
+                        Booked
+                      </span>
+                    ) : property.verified && (
                       <span className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-lg">
                         <ShieldCheck size={12} /> Verified
                       </span>

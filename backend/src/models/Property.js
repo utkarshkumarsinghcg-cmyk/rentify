@@ -14,6 +14,13 @@ const propertySchema = new mongoose.Schema({
     default: 'APARTMENT' 
   },
   isAvailable: { type: Boolean, default: true },
+  status: { 
+    type: String, 
+    enum: ['AVAILABLE', 'PENDING_INSPECTION', 'INSPECTED', 'BOOKED'], 
+    default: 'AVAILABLE' 
+  },
+  pincode: { type: String },
+  addressDetails: { type: String },
   amenities: [{ type: String }],
   images: [{ type: String }],
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },

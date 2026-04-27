@@ -8,6 +8,7 @@ const TYPES = ['Apartment', 'House', 'Studio', 'Villa'];
 const emptyForm = {
   title: '', description: '', type: 'Apartment', city: '', address: '',
   rent: '', bedrooms: '', bathrooms: '', amenities: [], images: [], available: true,
+  pincode: '', addressDetails: ''
 };
 
 export default function AddPropertyModal({ isOpen, onClose, onSubmit, initialData = null }) {
@@ -90,7 +91,9 @@ export default function AddPropertyModal({ isOpen, onClose, onSubmit, initialDat
             <>
               {[['title', 'Property Title', 'text', 'Skyline Lofts #402'],
                 ['city', 'City', 'text', 'Mumbai'],
-                ['address', 'Full Address', 'text', '123 Main Street, Mumbai - 400001']].map(([field, label, type, ph]) => (
+                ['pincode', 'Pincode', 'text', '400001'],
+                ['address', 'Neighborhood/Area', 'text', '123 Main Street'],
+                ['addressDetails', 'House/Flat No. & Details', 'text', 'Flat 402, B-Wing']].map(([field, label, type, ph]) => (
                 <div key={field}>
                   <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">{label}</label>
                   <input type={type} placeholder={ph} value={form[field]}
