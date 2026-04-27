@@ -632,9 +632,19 @@ const RenterDashboard = ({ data }) => {
                 Beautiful modern living space conveniently located. Features updated appliances, spacious floorplans, and excellent community amenities.
               </p>
               <Button 
-                onClick={() => {
-                  toast.success('Tour request sent to leasing agent!');
-                  setIsPropertyModalOpen(false);
+                onClick={async () => {
+                  try {
+                    await workflowService.createRequest({
+                      type: 'TOUR_REQUEST',
+                      propertyId: selectedProperty._id,
+                      notes: 'Renter requested a tour for this property.'
+                    });
+                    toast.success('Tour request sent to admin! ✓');
+                    setIsPropertyModalOpen(false);
+                    fetchTours();
+                  } catch (err) {
+                    toast.error('Failed to send tour request');
+                  }
                 }} 
                 className="w-full bg-primary text-white border-0 shadow-lg shadow-primary/20 py-3 rounded-xl font-bold hover:bg-blue-700"
               >

@@ -49,12 +49,11 @@ exports.updateRequestStatus = async (req, res) => {
     if (assignedInspector) request.assignedInspector = assignedInspector;
     if (notes) request.notes = notes;
 
-    await request.save();
+    const savedRequest = await request.save();
 
-    // Side effects based on status
+    // ── Side Effects based on status ───────────────────────
     if (status === 'ASSIGNED' && request.type === 'TOUR_REQUEST') {
-      // Create a lease if confirmed and assigned
-      const lease = await Lease.create({
+      await Lease.create({
         property: request.property._id,
         renter: request.requester,
         startDate: new Date(),
@@ -62,12 +61,35 @@ exports.updateRequestStatus = async (req, res) => {
         rentAmount: request.property.rent,
         status: 'ACTIVE'
       });
-      
-      // Update property status
       await Property.findByIdAndUpdate(request.property._id, { status: 'BOOKED', isAvailable: false });
     }
 
-    res.json(request);
+    if (status === 'COMPLETED' && request.type === 'LEASE_APPROVAL') {
+      await Property.findByIdAndUpdate(request.property._id, { status: 'AVAILABLE', isAvailable: true });
+    }
+    // ────────────────────────────────────────────────────────
+
+    // ── Notify Users via Socket ────────────────────────────
+    try {
+      const io = req.app.get('io');
+      if (io) {
+        io.to(String(request.requester)).emit('request_update', {
+          status: savedRequest.status,
+          type: savedRequest.type,
+          property: request.property?.title
+        });
+        if (assignedInspector) {
+          io.to(String(assignedInspector)).emit('new_task', {
+            type: 'INSPECTION',
+            property: request.property?.title,
+            requestId: savedRequest._id
+          });
+        }
+      }
+    } catch (err) {}
+    // ────────────────────────────────────────────────────────
+
+    res.json(savedRequest);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

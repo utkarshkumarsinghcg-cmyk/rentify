@@ -8,7 +8,7 @@ const workflowRequestSchema = new mongoose.Schema({
   },
   status: { 
     type: String, 
-    enum: ['PENDING', 'ADMIN_REVIEWED', 'DETAILS_SENT', 'CONFIRMED', 'ASSIGNED', 'REJECTED'], 
+    enum: ['PENDING', 'ADMIN_REVIEWED', 'DETAILS_SENT', 'CONFIRMED', 'ASSIGNED', 'COMPLETED', 'REJECTED'], 
     default: 'PENDING' 
   },
   property: { type: mongoose.Schema.Types.ObjectId, ref: 'Property', required: true },

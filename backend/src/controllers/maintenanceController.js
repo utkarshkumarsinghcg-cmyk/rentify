@@ -68,17 +68,21 @@ const maintenanceController = {
             title: req.body.title || `${req.body.category}: ${req.body.type}`,
             category: req.body.category || 'Maintenance',
             priority: savedTicket.priority,
-            property: req.body.propertyName || 'Your assigned property',
-            message: `New ${req.body.category || 'Maintenance'} request assigned to you`,
+            property: req.body.propertyName || 'Property',
+            location: req.body.address || 'Various',
+            message: `New maintenance task reported.`,
             createdAt: savedTicket.createdAt,
           };
 
+          // Notify Admins
+          io.emit('admin_notification', { ...payload, type: 'MAINTENANCE_ALERT' });
+
           // Notify specific assigned provider (if set)
-          if (req.body.assignedTo) {
-            io.to(String(req.body.assignedTo)).emit('new_ticket', payload);
+          if (savedTicket.assignedTo) {
+            io.to(String(savedTicket.assignedTo)).emit('new_ticket', payload);
           }
 
-          // Broadcast to all connected service providers room
+          // Broadcast to all connected service providers
           io.emit('new_ticket_broadcast', payload);
         }
       } catch (socketErr) {
@@ -107,6 +111,23 @@ const maintenanceController = {
       if (assignedTo) ticket.assignedTo = assignedTo;
 
       const updatedTicket = await ticket.save();
+
+      // ── Notify Provider if assigned ──────────────────────
+      try {
+        if (assignedTo) {
+          const io = req.app.get('io');
+          if (io) {
+            io.to(String(assignedTo)).emit('new_task', {
+              type: 'MAINTENANCE',
+              title: 'New Maintenance Assigned',
+              message: `Admin assigned you to a ticket.`,
+              ticketId: updatedTicket._id
+            });
+          }
+        }
+      } catch (err) {}
+      // ────────────────────────────────────────────────────────
+
       res.status(200).json(updatedTicket);
     } catch (error) {
       res.status(500).json({ message: error.message });

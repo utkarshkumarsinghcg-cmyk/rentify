@@ -9,6 +9,7 @@ import { Toaster } from 'react-hot-toast';
 import { store } from './store/store';
 import AppRoutes from './routes/AppRoutes';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import NotificationListener from './components/common/NotificationListener';
 
 // Inner component so it can access Redux store
 const ThemedApp = () => {
@@ -25,6 +26,7 @@ const ThemedApp = () => {
 
   return (
     <BrowserRouter>
+      <NotificationListener />
       <AppRoutes />
       <ToastContainer position="bottom-right" theme={theme} />
       <Toaster position="top-right" containerStyle={{ top: 20, right: 20 }} />

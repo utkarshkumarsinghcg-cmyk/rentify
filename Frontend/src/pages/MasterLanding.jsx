@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { Building, User, ShieldCheck, Wrench, ShieldAlert, CheckCircle, ArrowRight, Download } from 'lucide-react';
+import { Building, User, ShieldCheck, Wrench, ShieldAlert, CheckCircle, ArrowRight, Download, Star } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import Button from '../components/common/Button';
 
@@ -152,7 +152,134 @@ const MasterLanding = () => {
           </div>
         </div>
       </section>
+      {/* Stats Flex Section */}
+      <section className="py-20 bg-white dark:bg-slate-900 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-4 items-center">
+            <div className="text-center group">
+              <div className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-2 group-hover:scale-110 transition-transform duration-300">10k+</div>
+              <p className="text-sm font-black text-blue-600 uppercase tracking-widest">Active Assets</p>
+            </div>
+            <div className="text-center group">
+              <div className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-2 group-hover:scale-110 transition-transform duration-300">₹2B+</div>
+              <p className="text-sm font-black text-emerald-500 uppercase tracking-widest">Annual Rent</p>
+            </div>
+            <div className="text-center group">
+              <div className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-2 group-hover:scale-110 transition-transform duration-300">50k+</div>
+              <p className="text-sm font-black text-purple-600 uppercase tracking-widest">Verified Users</p>
+            </div>
+            <div className="text-center group">
+              <div className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-2 group-hover:scale-110 transition-transform duration-300">99.9%</div>
+              <p className="text-sm font-black text-orange-500 uppercase tracking-widest">Uptime SLA</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
+      {/* The Rentify Loop Flex */}
+      <section className="py-24 bg-slate-50 dark:bg-slate-950 border-y border-slate-100 dark:border-slate-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row items-center gap-20">
+            <div className="lg:w-1/2 space-y-8">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-black uppercase tracking-widest">
+                <CheckCircle size={14} /> Built for Efficiency
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white leading-tight">
+                One Ecosystem. <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-emerald-500">Infinite Possibilities.</span>
+              </h2>
+              <p className="text-lg text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                We've bridged the gap between owners, renters, and service providers. Our intelligent notification engine and role-based automation ensure no task goes unassigned and no rent goes unpaid.
+              </p>
+              <div className="space-y-4">
+                {[
+                  'Real-time Socket Notifications for instant alerts',
+                  'Automated Lease Generation & Digital Signing',
+                  'Smart Maintenance Dispatch with Provider Tracking',
+                  'Comprehensive Security Audits & PDF Reporting'
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-3 text-slate-700 dark:text-slate-300 font-bold">
+                    <div className="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+                      <CheckCircle size={14} />
+                    </div>
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="lg:w-1/2 relative">
+              <div className="absolute inset-0 bg-blue-600/20 blur-[120px] rounded-full"></div>
+              <div className="relative bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-slate-800 transform hover:-rotate-1 transition-transform duration-700">
+                 <img 
+                   src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1000&auto=format&fit=crop&q=80" 
+                   alt="Platform Analytics" 
+                   className="rounded-3xl shadow-lg grayscale group-hover:grayscale-0 transition-all duration-700"
+                 />
+                 {/* Floating Badges */}
+                 <div className="absolute -top-6 -right-6 bg-slate-900 text-white p-6 rounded-3xl shadow-2xl animate-bounce duration-[3000ms]">
+                   <ShieldCheck className="text-emerald-500 mb-2" size={32} />
+                   <div className="text-xs font-black uppercase">Verified</div>
+                   <div className="text-[10px] opacity-50">Secure Protocol</div>
+                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Wall of Love (Reviews) */}
+      <section className="py-24 bg-white dark:bg-slate-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-20">
+            <h2 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white mb-6">Loved by Thousands</h2>
+            <p className="text-lg text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+              Join the ecosystem that's redefining property management. Here's what our users are saying across the globe.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                name: 'Anjali Sharma',
+                role: 'Property Owner',
+                img: 'https://i.pravatar.cc/150?u=anjali',
+                quote: "Rentify transformed my portfolio management. I now handle 40 units single-handedly without missing a single rent payment.",
+                rating: 5
+              },
+              {
+                name: 'Vikram Singh',
+                role: 'Field Inspector',
+                img: 'https://i.pravatar.cc/150?u=vikram',
+                quote: "The digital audit tools are a game changer. I can finish a full property walkthrough and generate a PDF report in under 20 minutes.",
+                rating: 5
+              },
+              {
+                name: 'David Miller',
+                role: 'Professional Renter',
+                img: 'https://i.pravatar.cc/150?u=david',
+                quote: "Finally a rental app that works. Maintenance requests are handled within hours, and the rewards system is a fantastic bonus.",
+                rating: 5
+              }
+            ].map((review, i) => (
+              <div key={i} className="bg-slate-50 dark:bg-slate-800/30 p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 hover:shadow-xl transition-all duration-500 group">
+                <div className="flex gap-1 text-amber-500 mb-6">
+                  {[...Array(review.rating)].map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
+                </div>
+                <p className="text-slate-700 dark:text-slate-300 text-lg italic leading-relaxed mb-8">
+                  "{review.quote}"
+                </p>
+                <div className="flex items-center gap-4">
+                  <img src={review.img} className="w-12 h-12 rounded-full border-2 border-white dark:border-slate-700 shadow-md" alt={review.name} />
+                  <div>
+                    <div className="font-black text-slate-900 dark:text-white text-sm">{review.name}</div>
+                    <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{review.role}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
       {/* Bento Box Features Section */}
       <section id="how-it-works" className="py-24 bg-slate-100 dark:bg-slate-900/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -55,12 +55,28 @@ const propertyController = {
       const savedProperty = await newProperty.save();
 
       // Create Lease Approval Request for Admin
-      await WorkflowRequest.create({
+      const workflowReq = await WorkflowRequest.create({
         type: 'LEASE_APPROVAL',
         property: savedProperty._id,
         requester: req.user.id,
         notes: 'Owner requested lease approval and inspection.'
       });
+
+      // ── Notify Admin via Socket ────────────────────────────
+      try {
+        const io = req.app.get('io');
+        if (io) {
+          io.emit('admin_notification', {
+            type: 'PROPERTY_LISTED',
+            title: 'New Property Listing',
+            property: savedProperty.title,
+            location: savedProperty.city,
+            message: `Owner listed a new property. Survey required.`,
+            workflowId: workflowReq._id
+          });
+        }
+      } catch (err) {}
+      // ────────────────────────────────────────────────────────
 
       res.status(201).json(savedProperty);
     } catch (error) {
