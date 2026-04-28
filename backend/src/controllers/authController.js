@@ -7,6 +7,11 @@ exports.register = async (req, res) => {
     const { name, email, password, role } = req.body;
     const normalizedEmail = email.toLowerCase().trim();
     
+    // Block admin self-registration — admins can only be seeded
+    if (role && role.toUpperCase() === 'ADMIN') {
+      return res.status(403).json({ error: 'Admin accounts cannot be created via signup. Contact the platform administrator.' });
+    }
+
     // Check if user exists
     const userExists = await User.findOne({ email: normalizedEmail });
     if (userExists) {
