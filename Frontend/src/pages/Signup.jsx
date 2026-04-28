@@ -4,7 +4,6 @@ import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../store/slices/authSlice';
 import { Building2, User, Mail, Phone, Lock, ArrowRight, ShieldCheck, Wrench, Search, CheckCircle2, Wand2 } from 'lucide-react';
 import authService from '../services/authService';
-import { sendWhatsAppWelcome } from '../utils/whatsapp';
 import toast from 'react-hot-toast';
 
 const ROLES = [
@@ -130,12 +129,6 @@ const Signup = () => {
       localStorage.setItem('rentify_user_role', backendRole.toLowerCase() === 'renter' ? 'tenant' : backendRole.toLowerCase());
       
       toast.success('Welcome to SmartRent! 🎉');
-
-      // Trigger WhatsApp Welcome
-      setTimeout(() => {
-        sendWhatsAppWelcome(response.user.name, response.user.role, response.user.phone || formData.phone);
-      }, 1500);
-
       navigate(`/${dashboardPrefix}-dashboard`);
     } catch (error) {
       console.error("Registration error:", error);

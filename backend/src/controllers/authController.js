@@ -1,10 +1,11 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const { generateToken } = require('../utils/jwt');
+const { sendWhatsAppWelcome } = require('../services/whatsappService');
 
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, phone } = req.body;
     const normalizedEmail = email.toLowerCase().trim();
     
     // Block admin self-registration — admins can only be seeded
@@ -24,8 +25,16 @@ exports.register = async (req, res) => {
       name,
       email: normalizedEmail,
       passwordHash,
-      role
+      role,
+      phone
     });
+    
+    // Trigger WhatsApp Welcome (non-blocking)
+    if (phone) {
+      sendWhatsAppWelcome(phone, user.name, user.role).catch(err => 
+        console.error('[WhatsApp Bot] Welcome error:', err.message)
+      );
+    }
     
     const token = generateToken(user._id);
     res.status(201).json({

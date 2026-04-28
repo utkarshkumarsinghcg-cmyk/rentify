@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const { generateToken } = require('../utils/jwt');
+const { sendWhatsAppWelcome } = require('../services/whatsappService');
 
 /**
  * Handle user login/registration after successful Firebase Phone Verification.
@@ -29,6 +30,11 @@ exports.phoneLogin = async (req, res) => {
       });
       isNewUser = true;
       console.log(`[Phone Auth] New user: ${phone} as ${selectedRole}`);
+
+      // Trigger WhatsApp Welcome (non-blocking)
+      sendWhatsAppWelcome(phone, user.name, user.role).catch(err => 
+        console.error('[WhatsApp Bot] Welcome error:', err.message)
+      );
     }
 
     const token = generateToken(user._id);
