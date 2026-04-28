@@ -6,20 +6,26 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 exports.googleLogin = async (req, res) => {
   try {
-    const { credential } = req.body;
+    const { credential, email, name, googleId } = req.body;
     
-    if (!credential) {
-      return res.status(400).json({ error: 'Google credential is required' });
-    }
+    let normalizedEmail, userName;
 
-    // Verify Google token
-    const ticket = await client.verifyIdToken({
-      idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-    const payload = ticket.getPayload();
-    const { name, email, picture, sub: googleId } = payload;
-    const normalizedEmail = email.toLowerCase().trim();
+    if (credential) {
+      // Flow 1: ID Token verification (from GoogleLogin component)
+      const ticket = await client.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      const payload = ticket.getPayload();
+      normalizedEmail = payload.email.toLowerCase().trim();
+      userName = payload.name;
+    } else if (email && googleId) {
+      // Flow 2: Access token flow (from useGoogleLogin hook — custom button)
+      normalizedEmail = email.toLowerCase().trim();
+      userName = name;
+    } else {
+      return res.status(400).json({ error: 'Google credential or user info is required' });
+    }
 
     // Find existing user or create new one
     let user = await User.findOne({ email: normalizedEmail });
@@ -27,9 +33,9 @@ exports.googleLogin = async (req, res) => {
     if (!user) {
       // First-time Google user → create with RENTER role by default
       user = await User.create({
-        name,
+        name: userName,
         email: normalizedEmail,
-        passwordHash: `GOOGLE_${googleId}`, // No password needed for Google users
+        passwordHash: `GOOGLE_${googleId || 'oauth'}`,
         role: 'RENTER',
         authProvider: 'google'
       });
