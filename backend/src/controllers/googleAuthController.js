@@ -4,9 +4,11 @@ const { generateToken } = require('../utils/jwt');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+const VALID_ROLES = ['OWNER', 'RENTER', 'SERVICE', 'INSPECTOR'];
+
 exports.googleLogin = async (req, res) => {
   try {
-    const { credential, email, name, googleId } = req.body;
+    const { credential, email, name, googleId, role } = req.body;
     
     let normalizedEmail, userName;
 
@@ -27,19 +29,26 @@ exports.googleLogin = async (req, res) => {
       return res.status(400).json({ error: 'Google credential or user info is required' });
     }
 
-    // Find existing user or create new one
+    // Find existing user
     let user = await User.findOne({ email: normalizedEmail });
     
-    if (!user) {
-      // First-time Google user → create with RENTER role by default
+    if (user) {
+      // Existing user — log them in with their stored role (ignore selected role)
+      console.log(`[Google Auth] Existing user login: ${normalizedEmail} (${user.role})`);
+    } else {
+      // New user — use selected role (block ADMIN)
+      const selectedRole = (role && VALID_ROLES.includes(role.toUpperCase())) 
+        ? role.toUpperCase() 
+        : 'RENTER';
+
       user = await User.create({
         name: userName,
         email: normalizedEmail,
         passwordHash: `GOOGLE_${googleId || 'oauth'}`,
-        role: 'RENTER',
+        role: selectedRole,
         authProvider: 'google'
       });
-      console.log(`[Google Auth] New user created: ${normalizedEmail}`);
+      console.log(`[Google Auth] New user created: ${normalizedEmail} as ${selectedRole}`);
     }
 
     const token = generateToken(user._id);

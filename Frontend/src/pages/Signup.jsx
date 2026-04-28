@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../store/slices/authSlice';
 import { Building2, User, Mail, Phone, Lock, ArrowRight, ShieldCheck, Wrench, Search, CheckCircle2, Wand2 } from 'lucide-react';
@@ -16,9 +16,32 @@ const ROLES = [
 const Signup = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const location = useLocation();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+
+  // Auto-detect role from URL referrer or localStorage
+  const detectRole = () => {
+    const storedRole = localStorage.getItem('rentify_user_role');
+    const referrer = document.referrer || '';
+    const roleMap = { 'owner': 'OWNER', 'renter': 'RENTER', 'tenant': 'RENTER', 'service': 'SERVICE', 'inspector': 'INSPECTOR' };
+    
+    // Check URL search params first (e.g., /signup?role=owner)
+    const params = new URLSearchParams(location.search);
+    const paramRole = params.get('role');
+    if (paramRole && roleMap[paramRole.toLowerCase()]) return roleMap[paramRole.toLowerCase()];
+    
+    // Check localStorage
+    if (storedRole && roleMap[storedRole.toLowerCase()]) return roleMap[storedRole.toLowerCase()];
+    
+    // Check referrer URL
+    for (const [key, value] of Object.entries(roleMap)) {
+      if (referrer.includes(`/welcome/${key}`)) return value;
+    }
+    
+    return 'RENTER'; // Default
+  };
 
   const [formData, setFormData] = useState({
     name: '',
@@ -26,9 +49,11 @@ const Signup = () => {
     phone: '',
     password: '',
     confirmPassword: '',
-    role: '',
+    role: detectRole(),
     roleInfo: {}
   });
+
+  const detectedRoleLabel = ROLES.find(r => r.id === formData.role)?.title || 'Tenant';
 
   const validateStep1 = () => {
     const newErrors = {};
@@ -77,13 +102,6 @@ const Signup = () => {
 
   const handleNext = () => {
     if (step === 1 && validateStep1()) setStep(2);
-    else if (step === 2) {
-      if (!formData.role) {
-        toast.error('Please select a role');
-        return;
-      }
-      setStep(3);
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -145,19 +163,23 @@ const Signup = () => {
           <div className="mb-8">
             <div className="flex justify-between mb-2">
               <span className={`text-xs font-bold ${step >= 1 ? 'text-indigo-600' : 'text-slate-400'}`}>Personal Info</span>
-              <span className={`text-xs font-bold ${step >= 2 ? 'text-indigo-600' : 'text-slate-400'}`}>Choose Role</span>
-              <span className={`text-xs font-bold ${step >= 3 ? 'text-indigo-600' : 'text-slate-400'}`}>Details</span>
+              <span className={`text-xs font-bold ${step >= 2 ? 'text-indigo-600' : 'text-slate-400'}`}>Details</span>
             </div>
             <div className="h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden flex">
-              <div className={`h-full bg-indigo-600 transition-all duration-300 ${step === 1 ? 'w-1/3' : step === 2 ? 'w-2/3' : 'w-full'}`}></div>
+              <div className={`h-full bg-indigo-600 transition-all duration-300 ${step === 1 ? 'w-1/2' : 'w-full'}`}></div>
+            </div>
+            {/* Show detected role */}
+            <div className="mt-3 flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+              <CheckCircle2 size={14} />
+              Signing up as: {detectedRoleLabel}
             </div>
           </div>
 
           <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-6">
-            {step === 1 ? 'Create Account' : step === 2 ? 'Select Your Role' : 'Final Details'}
+            {step === 1 ? 'Create Account' : 'Final Details'}
           </h2>
 
-          <form onSubmit={step === 3 ? handleSubmit : (e) => { e.preventDefault(); handleNext(); }} className="space-y-5">
+          <form onSubmit={step === 2 ? handleSubmit : (e) => { e.preventDefault(); handleNext(); }} className="space-y-5">
             
             {step === 1 && (
               <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
@@ -234,28 +256,9 @@ const Signup = () => {
               </div>
             )}
 
-            {step === 2 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in slide-in-from-right-4 duration-300">
-                {ROLES.map(r => (
-                  <div 
-                    key={r.id}
-                    onClick={() => setFormData({...formData, role: r.id})}
-                    className={`cursor-pointer p-4 rounded-2xl border-2 transition-all ${formData.role === r.id ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300'}`}
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${formData.role === r.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
-                        <r.icon size={20} />
-                      </div>
-                      <h3 className="font-bold text-slate-900 dark:text-white">{r.title}</h3>
-                      {formData.role === r.id && <CheckCircle2 size={18} className="ml-auto text-indigo-600" />}
-                    </div>
-                    <p className="text-xs text-slate-500 ml-13">{r.desc}</p>
-                  </div>
-                ))}
-              </div>
-            )}
 
-            {step === 3 && (
+
+            {step === 2 && (
               <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
                 {/* Other roles mock fields for UI completeness */}
                 {formData.role === 'SERVICE' && (
@@ -282,7 +285,7 @@ const Signup = () => {
                   loading ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'
                 } text-white`}
               >
-                {step < 3 ? (
+                {step < 2 ? (
                   <>Continue <ArrowRight size={16} /></>
                 ) : loading ? (
                   <span className="flex items-center gap-2">
