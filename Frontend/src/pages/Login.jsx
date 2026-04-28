@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../store/slices/authSlice';
-import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight, Home, Wrench, Search, User } from 'lucide-react';
+import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight, Home, Wrench, Search, User, KeyRound, Timer } from 'lucide-react';
 import { useGoogleLogin } from '@react-oauth/google';
 import authService from '../services/authService';
 import toast from 'react-hot-toast';
@@ -20,6 +20,11 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [selectedRole, setSelectedRole] = useState('RENTER');
+  const [loginMode, setLoginMode] = useState('password'); // 'password' or 'otp'
+  const [otpStep, setOtpStep] = useState('email'); // 'email' or 'verify'
+  const [otpEmail, setOtpEmail] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [otpCountdown, setOtpCountdown] = useState(0);
   
   const [formData, setFormData] = useState({
     email: '',
@@ -90,6 +95,53 @@ const Login = () => {
       console.error('Login error:', error);
       const errMsg = error.response?.data?.error || error.response?.data?.message || 'Login failed. Please check your credentials.';
       toast.error(errMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Email OTP handlers
+  const handleSendOTP = async (e) => {
+    e.preventDefault();
+    if (!otpEmail || !/\S+@\S+\.\S+/.test(otpEmail)) {
+      toast.error('Please enter a valid email');
+      return;
+    }
+    setLoading(true);
+    try {
+      await authService.sendEmailOTP(otpEmail);
+      toast.success('OTP sent to your email! 📧');
+      setOtpStep('verify');
+      setOtpCountdown(60);
+      const timer = setInterval(() => {
+        setOtpCountdown(prev => {
+          if (prev <= 1) { clearInterval(timer); return 0; }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to send OTP');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+    if (!otpCode || otpCode.length !== 6) {
+      toast.error('Please enter the 6-digit OTP');
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await authService.verifyEmailOTP({
+        email: otpEmail,
+        otp: otpCode,
+        role: selectedRole,
+      });
+      handleLoginSuccess(response);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Invalid OTP');
     } finally {
       setLoading(false);
     }
@@ -173,8 +225,103 @@ const Login = () => {
           </button>
 
           <div className="flex items-center before:flex-1 before:border-t before:border-slate-200 dark:before:border-slate-700 after:flex-1 after:border-t after:border-slate-200 dark:after:border-slate-700 mb-5">
-            <span className="px-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Or sign in with email</span>
+            <span className="px-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Or sign in with</span>
           </div>
+
+          {/* Login Mode Tabs */}
+          <div className="flex mb-5 bg-slate-100 dark:bg-slate-800 rounded-xl p-1">
+            <button
+              type="button"
+              onClick={() => { setLoginMode('password'); setOtpStep('email'); }}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all ${
+                loginMode === 'password' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              <Lock size={14} /> Password
+            </button>
+            <button
+              type="button"
+              onClick={() => setLoginMode('otp')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all ${
+                loginMode === 'otp' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              <KeyRound size={14} /> Email OTP
+            </button>
+          </div>
+
+          {loginMode === 'otp' ? (
+            /* Email OTP Form */
+            otpStep === 'email' ? (
+              <form onSubmit={handleSendOTP} className="space-y-5">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Email</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Mail size={18} className="text-slate-400" />
+                    </div>
+                    <input
+                      type="email"
+                      value={otpEmail}
+                      onChange={(e) => setOtpEmail(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:border-blue-500 focus:ring-blue-500/20 outline-none dark:text-white"
+                      placeholder="name@example.com"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition-all disabled:opacity-70"
+                >
+                  {loading ? 'Sending...' : 'Send OTP'}
+                  {!loading && <ArrowRight size={16} />}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleVerifyOTP} className="space-y-5">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  We sent a 6-digit code to <strong className="text-blue-600">{otpEmail}</strong>
+                </p>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Enter OTP</label>
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                    className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-2xl font-mono font-bold tracking-[0.5em] focus:ring-2 focus:border-blue-500 focus:ring-blue-500/20 outline-none dark:text-white"
+                    placeholder="000000"
+                    autoFocus
+                  />
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <button
+                    type="button"
+                    onClick={() => { setOtpStep('email'); setOtpCode(''); }}
+                    className="text-blue-600 font-bold hover:text-blue-500"
+                  >
+                    ← Change email
+                  </button>
+                  {otpCountdown > 0 ? (
+                    <span className="flex items-center gap-1 text-slate-400">
+                      <Timer size={12} /> Resend in {otpCountdown}s
+                    </span>
+                  ) : (
+                    <button type="button" onClick={handleSendOTP} className="text-blue-600 font-bold hover:text-blue-500">Resend OTP</button>
+                  )}
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading || otpCode.length !== 6}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition-all disabled:opacity-70"
+                >
+                  {loading ? 'Verifying...' : 'Verify & Sign in'}
+                  {!loading && <ArrowRight size={16} />}
+                </button>
+              </form>
+            )
+          ) : (
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
@@ -255,6 +402,7 @@ const Login = () => {
               {!loading && <ArrowRight size={16} />}
             </button>
           </form>
+          )}
 
           <p className="mt-8 text-center text-sm text-slate-600 dark:text-slate-400">
             Don't have an account?{' '}
