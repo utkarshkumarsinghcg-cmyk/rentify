@@ -29,10 +29,18 @@ const authService = {
   },
 
   /**
-   * Handle Google OAuth Login
+   * Handle Google OAuth Login (ID token flow)
    */
-  googleLogin: async (tokenId) => {
-    const response = await api.post('/auth/google', { token: tokenId });
+  googleLogin: async (credential) => {
+    const response = await api.post('/auth/google', { credential });
+    return response.data;
+  },
+
+  /**
+   * Handle Google OAuth Login (access token flow — custom button)
+   */
+  googleLoginWithInfo: async (userInfo) => {
+    const response = await api.post('/auth/google', userInfo);
     return response.data;
   },
 
