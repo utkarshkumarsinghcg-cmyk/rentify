@@ -175,12 +175,15 @@ async function seed() {
     console.log('🔍 Inspection tasks created');
 
     console.log('\n🎉 Database seeded successfully!');
-    console.log('─────────────────────────────────');
-    console.log('🔑 Login Credentials:');
-    console.log('   Admin  → admin@rentify.com   / adminpassword');
-    console.log('   Owner  → owner@example.com     / password123');
-    console.log('   Renter → tenant@example.com    / password123');
-    console.log('─────────────────────────────────');
+    console.log('══════════════════════════════════════════════════');
+    console.log('🔑 TEST ACCOUNTS (one per role):');
+    console.log('──────────────────────────────────────────────────');
+    console.log('   ADMIN           → admin@rentify.com            / adminpassword');
+    console.log('   OWNER           → owner@example.com            / password123');
+    console.log('   RENTER          → tenant@example.com           / password123');
+    console.log('   INSPECTOR       → deepak.inspector@example.com / password123');
+    console.log('   SERVICE PROVIDER→ suresh.service@example.com   / password123');
+    console.log('══════════════════════════════════════════════════');
 
     await mongoose.disconnect();
     process.exit(0);

@@ -11,7 +11,6 @@ const ROLES = [
   { id: 'RENTER', title: 'Tenant', icon: User, desc: 'Find and rent your perfect home' },
   { id: 'SERVICE', title: 'Service Provider', icon: Wrench, desc: 'Offer maintenance services' },
   { id: 'INSPECTOR', title: 'Inspector', icon: Search, desc: 'Conduct property inspections' },
-  { id: 'ADMIN', title: 'Admin', icon: ShieldCheck, desc: 'Platform management' }
 ];
 
 const Signup = () => {
