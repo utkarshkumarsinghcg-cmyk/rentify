@@ -20,6 +20,9 @@ const PersonaLanding = () => {
     const validRoles = ['renter', 'owner', 'inspector', 'service', 'admin'];
     if (!validRoles.includes(role)) {
       navigate('/');
+    } else {
+      // Store role for Signup auto-detection
+      localStorage.setItem('rentify_user_role', role === 'renter' ? 'tenant' : role);
     }
   }, [role, navigate]);
 

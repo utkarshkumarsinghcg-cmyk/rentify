@@ -2,16 +2,24 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../store/slices/authSlice';
-import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight, Home, Wrench, Search, User } from 'lucide-react';
 import { useGoogleLogin } from '@react-oauth/google';
 import authService from '../services/authService';
 import toast from 'react-hot-toast';
+
+const ROLES = [
+  { id: 'OWNER', label: 'Owner', icon: Building2 },
+  { id: 'RENTER', label: 'Tenant', icon: Home },
+  { id: 'SERVICE', label: 'Service', icon: Wrench },
+  { id: 'INSPECTOR', label: 'Inspector', icon: Search },
+];
 
 const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [selectedRole, setSelectedRole] = useState('RENTER');
   
   const [formData, setFormData] = useState({
     email: '',
@@ -31,30 +39,32 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleLoginSuccess = (response) => {
+    dispatch(loginSuccess({ user: response.user, token: response.token }));
+    const backendRole = response.user.role;
+    const routeMap = { 'RENTER': 'tenant', 'OWNER': 'owner', 'SERVICE': 'service', 'INSPECTOR': 'inspector', 'ADMIN': 'admin' };
+    localStorage.setItem('rentify_user_role', backendRole.toLowerCase() === 'renter' ? 'tenant' : backendRole.toLowerCase());
+    toast.success('Welcome!');
+    navigate(`/${routeMap[backendRole] || 'tenant'}-dashboard`);
+  };
+
   const handleGoogleSuccess = async (tokenResponse) => {
     try {
       setLoading(true);
-      // Get user info from Google using the access token
       const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
         headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
       });
       const userInfo = await userInfoRes.json();
       
-      // Send the Google credential to our backend
-      // We'll use a slightly different flow — send user info directly
       const response = await authService.googleLoginWithInfo({
         email: userInfo.email,
         name: userInfo.name,
         googleId: userInfo.sub,
         picture: userInfo.picture,
+        role: selectedRole, // Send selected role for new accounts
       });
       
-      dispatch(loginSuccess({ user: response.user, token: response.token }));
-      const backendRole = response.user.role;
-      const routeMap = { 'RENTER': 'tenant', 'OWNER': 'owner', 'SERVICE': 'service', 'INSPECTOR': 'inspector', 'ADMIN': 'admin' };
-      localStorage.setItem('rentify_user_role', backendRole.toLowerCase() === 'renter' ? 'tenant' : backendRole.toLowerCase());
-      toast.success('Welcome!');
-      navigate(`/${routeMap[backendRole] || 'tenant'}-dashboard`);
+      handleLoginSuccess(response);
     } catch (err) {
       console.error('Google login error:', err);
       toast.error(err.response?.data?.error || err.message || 'Google login failed');
@@ -75,22 +85,7 @@ const Login = () => {
     setLoading(true);
     try {
       const response = await authService.login(formData.email, formData.password);
-      dispatch(loginSuccess({ user: response.user, token: response.token }));
-      
-      const backendRole = response.user.role;
-      const routeMap = {
-        'RENTER': 'tenant',
-        'OWNER': 'owner',
-        'SERVICE': 'service',
-        'INSPECTOR': 'inspector',
-        'ADMIN': 'admin'
-      };
-      const dashboardPrefix = routeMap[backendRole] || 'tenant';
-
-      localStorage.setItem('rentify_user_role', backendRole.toLowerCase() === 'renter' ? 'tenant' : backendRole.toLowerCase());
-      
-      toast.success('Welcome back!');
-      navigate(`/${dashboardPrefix}-dashboard`);
+      handleLoginSuccess(response);
     } catch (error) {
       console.error('Login error:', error);
       const errMsg = error.response?.data?.error || error.response?.data?.message || 'Login failed. Please check your credentials.';
@@ -131,16 +126,42 @@ const Login = () => {
       {/* Right Side - Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 lg:p-16">
         <div className="w-full max-w-md">
-          <div className="text-center lg:text-left mb-8">
+          <div className="text-center lg:text-left mb-6">
             <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-2">Welcome back</h2>
             <p className="text-slate-500 dark:text-slate-400">Please enter your details to sign in.</p>
           </div>
 
-          {/* Google Button — Premium Styled */}
+          {/* Role Selector */}
+          <div className="mb-5">
+            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">I am a</label>
+            <div className="grid grid-cols-4 gap-2">
+              {ROLES.map((role) => {
+                const Icon = role.icon;
+                const isSelected = selectedRole === role.id;
+                return (
+                  <button
+                    key={role.id}
+                    type="button"
+                    onClick={() => setSelectedRole(role.id)}
+                    className={`flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl text-xs font-bold transition-all duration-200 border-2 ${
+                      isSelected
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-600/25'
+                        : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600'
+                    }`}
+                  >
+                    <Icon size={16} />
+                    {role.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Google Button */}
           <button
             onClick={() => googleLogin()}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 py-3 mb-6 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md group"
+            className="w-full flex items-center justify-center gap-3 py-3 mb-5 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md group"
           >
             <svg viewBox="0 0 24 24" className="w-5 h-5 transition-transform group-hover:scale-110">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -151,7 +172,7 @@ const Login = () => {
             Continue with Google
           </button>
 
-          <div className="flex items-center before:flex-1 before:border-t before:border-slate-200 dark:before:border-slate-700 after:flex-1 after:border-t after:border-slate-200 dark:after:border-slate-700 mb-6">
+          <div className="flex items-center before:flex-1 before:border-t before:border-slate-200 dark:before:border-slate-700 after:flex-1 after:border-t after:border-slate-200 dark:after:border-slate-700 mb-5">
             <span className="px-3 text-xs font-medium text-slate-400 uppercase tracking-wider">Or sign in with email</span>
           </div>
 

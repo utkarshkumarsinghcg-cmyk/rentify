@@ -118,6 +118,7 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-8 font-sans text-sm font-medium tracking-tight shrink-0">
             <Link to="/listings" className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors shrink-0">Listings</Link>
             <button onClick={() => { document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors shrink-0">How it Works</button>
+            <button onClick={() => { document.getElementById('roles')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-white bg-blue-600 hover:bg-blue-700 px-4 py-1.5 rounded-lg transition-colors shrink-0 font-bold text-xs shadow-sm">Get Started</button>
           </div>
         )}
 
