@@ -61,6 +61,22 @@ const authService = {
   },
 
   /**
+   * Send Email OTP
+   */
+  sendEmailOTP: async (email) => {
+    const response = await api.post('/auth/email-otp/send', { email });
+    return response.data;
+  },
+
+  /**
+   * Verify Email OTP and login/register
+   */
+  verifyEmailOTP: async ({ email, otp, name, role }) => {
+    const response = await api.post('/auth/email-otp/verify', { email, otp, name, role });
+    return response.data;
+  },
+
+  /**
    * Get current user profile (for session persistence)
    */
   getProfile: async () => {
