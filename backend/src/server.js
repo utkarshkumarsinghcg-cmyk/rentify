@@ -17,8 +17,12 @@ const chatRoutes = require('./routes/chat');
 const inspectionRoutes = require('./routes/inspections');
 const workflowRoutes = require('./routes/workflow');
 
+const { initWhatsApp } = require('./services/whatsappService');
+
 // Connect to Database
 connectDB();
+// Initialize WhatsApp Bot
+initWhatsApp();
 
 const app = express();
 const httpServer = http.createServer(app);

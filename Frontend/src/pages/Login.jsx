@@ -7,7 +7,6 @@ import { useGoogleLogin } from '@react-oauth/google';
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import { auth } from '../config/firebase';
 import authService from '../services/authService';
-import { sendWhatsAppWelcome } from '../utils/whatsapp';
 import toast from 'react-hot-toast';
 
 const ROLES = [
@@ -57,14 +56,6 @@ const Login = () => {
     const routeMap = { 'RENTER': 'tenant', 'OWNER': 'owner', 'SERVICE': 'service', 'INSPECTOR': 'inspector', 'ADMIN': 'admin' };
     localStorage.setItem('rentify_user_role', backendRole.toLowerCase() === 'renter' ? 'tenant' : backendRole.toLowerCase());
     toast.success('Welcome!');
-
-    // Trigger WhatsApp Welcome for new users
-    if (response.isNewUser) {
-      setTimeout(() => {
-        sendWhatsAppWelcome(response.user.name, response.user.role, response.user.phone);
-      }, 1500);
-    }
-
     navigate(`/${routeMap[backendRole] || 'tenant'}-dashboard`);
   };
 
