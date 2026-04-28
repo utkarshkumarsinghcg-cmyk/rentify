@@ -77,6 +77,30 @@ const authService = {
   },
 
   /**
+   * Check if daily phone SMS limit is reached
+   */
+  checkPhoneLimit: async () => {
+    const response = await api.get('/auth/phone-otp/check-limit');
+    return response.data;
+  },
+
+  /**
+   * Increment daily phone SMS count
+   */
+  incrementPhoneLimit: async () => {
+    const response = await api.post('/auth/phone-otp/increment-limit');
+    return response.data;
+  },
+
+  /**
+   * Login/Register with phone after Firebase verification
+   */
+  phoneLogin: async ({ phone, role, name }) => {
+    const response = await api.post('/auth/phone-login', { phone, role, name });
+    return response.data;
+  },
+
+  /**
    * Get current user profile (for session persistence)
    */
   getProfile: async () => {
