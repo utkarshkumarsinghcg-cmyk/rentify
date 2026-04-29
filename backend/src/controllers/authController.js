@@ -16,7 +16,11 @@ exports.register = async (req, res) => {
     // Check if email exists
     const emailExists = await User.findOne({ email: normalizedEmail });
     if (emailExists) {
-      return res.status(400).json({ message: 'Email already registered' });
+      return res.status(409).json({ 
+        message: 'Email already registered', 
+        error: 'An account with this email already exists. Please sign in instead.',
+        loginRedirect: true 
+      });
     }
 
     // Generate Unique Username
