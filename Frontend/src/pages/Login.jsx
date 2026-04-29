@@ -132,7 +132,9 @@ const Login = () => {
       handleLoginSuccess(response);
     } catch (error) {
       console.error('Login error:', error);
-      const errMsg = error.response?.data?.error || error.response?.data?.message || 'Login failed. Please check your credentials.';
+      // Prioritize the backend error message if it exists
+      const serverError = error.response?.data?.error || error.response?.data?.message;
+      const errMsg = serverError || 'Login failed. Please check your credentials.';
       toast.error(errMsg);
     } finally {
       setLoading(false);

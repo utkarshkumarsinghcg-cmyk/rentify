@@ -136,24 +136,41 @@ const AdminDashboard = ({ data, onRefresh }) => {
 
   useEffect(() => {
     const fetchDispatchData = async () => {
+      // Fetch Service Providers
       try {
-        const [providers, tickets, insp, tasks, convs, wRequests] = await Promise.all([
-          userService.getServiceProviders(),
-          maintenanceService.getAllTickets(),
-          userService.getInspectors(),
-          inspectionService.getInspections(),
-          chatService.getConversations(),
-          workflowService.getAdminRequests()
-        ]);
+        const providers = await userService.getServiceProviders();
         setServiceProviders(providers);
+      } catch (err) { console.error('Failed to fetch providers', err); }
+
+      // Fetch Tickets
+      try {
+        const tickets = await maintenanceService.getAllTickets();
         setMaintenanceTickets(tickets);
+      } catch (err) { console.error('Failed to fetch tickets', err); }
+
+      // Fetch Inspectors
+      try {
+        const insp = await userService.getInspectors();
         setInspectors(insp);
+      } catch (err) { console.error('Failed to fetch inspectors', err); }
+
+      // Fetch Inspections
+      try {
+        const tasks = await inspectionService.getInspections();
         setInspectionTasks(tasks);
+      } catch (err) { console.error('Failed to fetch inspections', err); }
+
+      // Fetch Conversations
+      try {
+        const convs = await chatService.getConversations();
         setConversations(convs);
+      } catch (err) { console.error('Failed to fetch conversations', err); }
+
+      // Fetch Workflow Requests
+      try {
+        const wRequests = await workflowService.getAdminRequests();
         setWorkflowRequests(wRequests);
-      } catch (err) {
-        console.error('Failed to fetch dashboard data', err);
-      }
+      } catch (err) { console.error('Failed to fetch workflows', err); }
     };
     fetchDispatchData();
   }, [data, isChatOpen]);
