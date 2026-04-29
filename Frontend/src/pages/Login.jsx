@@ -14,6 +14,7 @@ const ROLES = [
   { id: 'RENTER', label: 'Tenant', icon: Home },
   { id: 'SERVICE', label: 'Service', icon: Wrench },
   { id: 'INSPECTOR', label: 'Inspector', icon: Search },
+  { id: 'ADMIN', label: 'Admin', icon: User },
 ];
 
 const Login = () => {
@@ -44,7 +45,8 @@ const Login = () => {
       'renter': 'RENTER', 
       'tenant': 'RENTER', 
       'service': 'SERVICE', 
-      'inspector': 'INSPECTOR' 
+      'inspector': 'INSPECTOR',
+      'admin': 'ADMIN'
     };
 
     if (paramRole && roleMap[paramRole.toLowerCase()]) {
@@ -59,6 +61,8 @@ const Login = () => {
       setSelectedRole('SERVICE');
     } else if (referrer.toLowerCase().includes('inspector')) {
       setSelectedRole('INSPECTOR');
+    } else if (referrer.toLowerCase().includes('admin')) {
+      setSelectedRole('ADMIN');
     }
   }, []);
   
