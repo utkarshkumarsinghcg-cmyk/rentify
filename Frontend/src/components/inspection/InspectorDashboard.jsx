@@ -52,30 +52,36 @@ const InspectorDashboard = ({ data, onRefresh }) => {
   const mapRef = useRef(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [wRequests, inspHistory] = await Promise.all([
-          workflowService.getAdminRequests(), 
-          inspectionService.getInspections()
-        ]);
-        
-        // Filter workflow requests assigned to this inspector
-        const assignedToMe = wRequests.filter(r => 
-          r.type === 'LEASE_APPROVAL' && 
-          r.status === 'ASSIGNED' && 
-          (String(r.assignedInspector?._id || r.assignedInspector) === String(data.userId))
-        );
-        
-        setInspections(assignedToMe);
-        setHistory(wRequests.filter(r => 
-          r.status === 'COMPLETED' && 
-          (String(r.assignedInspector?._id || r.assignedInspector) === String(data.userId))
-        ));
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchData();
+    if (data) {
+      // Use the pre-fetched data from the dashboard stats endpoint
+      setInspections(data.schedule || []);
+      setHistory(data.history || []);
+    } else {
+      // Fallback: Fetch manually if data prop is missing (unlikely in Dashboard view)
+      const fetchData = async () => {
+        try {
+          const [wRequests, inspHistory] = await Promise.all([
+            workflowService.getAdminRequests(), 
+            inspectionService.getInspections()
+          ]);
+          
+          const assignedToMe = wRequests.filter(r => 
+            r.type === 'LEASE_APPROVAL' && 
+            r.status === 'ASSIGNED' && 
+            (String(r.assignedInspector?._id || r.assignedInspector) === String(data?.userId))
+          );
+          
+          setInspections(assignedToMe);
+          setHistory(wRequests.filter(r => 
+            r.status === 'COMPLETED' && 
+            (String(r.assignedInspector?._id || r.assignedInspector) === String(data?.userId))
+          ));
+        } catch (err) {
+          console.error('Manual fetch error:', err);
+        }
+      };
+      fetchData();
+    }
   }, [data]);
 
   useEffect(() => {
