@@ -129,13 +129,13 @@ const maintenanceController = {
       try {
         const io = req.app.get('io');
         if (io) {
-          const message = status === 'IN_PROGRESS' 
+          const message = updatedTicket.status === 'IN_PROGRESS' 
             ? `Your maintenance request for ${populatedTicket.property?.title} is now in progress.`
-            : status === 'RESOLVED'
+            : updatedTicket.status === 'RESOLVED'
             ? `Your maintenance request for ${populatedTicket.property?.title} has been resolved.`
-            : status === 'OPEN' && assignedTo
+            : updatedTicket.status === 'OPEN' && assignedTo
             ? `A technician has been assigned to your request for ${populatedTicket.property?.title}.`
-            : `Status updated for ${populatedTicket.property?.title}: ${status}`;
+            : `Status updated for ${populatedTicket.property?.title}: ${updatedTicket.status}`;
 
           const notificationData = {
             ticketId: updatedTicket._id,
