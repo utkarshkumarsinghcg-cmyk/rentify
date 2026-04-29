@@ -26,7 +26,7 @@ const Dashboard = () => {
   
   const [loading, setLoading] = React.useState(['owner', 'renter', 'tenant', 'service', 'service_provider', 'inspector', 'admin'].includes(resolvedRole));
 
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
     try {
       if (resolvedRole === 'owner') {
         const result = await propertyService.getOwnerDashboard();
@@ -45,32 +45,43 @@ const Dashboard = () => {
         setAdminData(result);
       }
     } catch (err) {
-      console.error(err);
+      console.error('Dashboard Fetch Error:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [resolvedRole]);
 
   React.useEffect(() => {
     if (resolvedRole) {
       fetchData();
       
       const socket = getSocket();
-      socket.on('request_update', fetchData);
-      socket.on('new_task', fetchData);
-      socket.on('new_ticket', fetchData);
-      socket.on('admin_notification', fetchData);
-      socket.on('new_workflow_request', fetchData);
+      
+      // Debounced refresh for socket events
+      const handleRefresh = () => {
+        // Small timeout to allow backend DB operations to complete
+        setTimeout(fetchData, 300);
+      };
+
+      socket.on('request_update', handleRefresh);
+      socket.on('new_task', handleRefresh);
+      socket.on('new_ticket', handleRefresh);
+      socket.on('admin_notification', handleRefresh);
+      socket.on('new_workflow_request', handleRefresh);
+      socket.on('workflow_update', handleRefresh);
+      socket.on('ticket_update', handleRefresh);
 
       return () => {
-        socket.off('request_update', fetchData);
-        socket.off('new_task', fetchData);
-        socket.off('new_ticket', fetchData);
-        socket.off('admin_notification', fetchData);
-        socket.off('new_workflow_request', fetchData);
+        socket.off('request_update', handleRefresh);
+        socket.off('new_task', handleRefresh);
+        socket.off('new_ticket', handleRefresh);
+        socket.off('admin_notification', handleRefresh);
+        socket.off('new_workflow_request', handleRefresh);
+        socket.off('workflow_update', handleRefresh);
+        socket.off('ticket_update', handleRefresh);
       };
     }
-  }, [resolvedRole]);
+  }, [resolvedRole, fetchData]);
 
   // Remove early return to maintain hook order consistency
   const showLoading = loading && !ownerData && !renterData && !adminData && !serviceData && !inspectorData;

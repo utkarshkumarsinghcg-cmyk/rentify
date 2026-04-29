@@ -180,32 +180,35 @@ const AdminDashboard = ({ data, onRefresh }) => {
     // Socket Listener for Real-time Updates
     const socket = getSocket();
     if (socket) {
-      socket.on('new_ticket', (ticket) => {
+      const handleNewTicket = (ticket) => {
         setMaintenanceTickets(prev => [ticket, ...prev]);
         toast.success('New Maintenance Request Received! 🔧', {
           style: { borderRadius: '1rem', background: '#0f172a', color: '#fff', fontWeight: '900' }
         });
-      });
+        if (onRefresh) onRefresh();
+      };
 
-      socket.on('admin_notification', (data) => {
-        if (data.type === 'MAINTENANCE_ALERT') {
-           // Maintenance tickets are handled by 'new_ticket' for list update
+      const handleUpdate = (data) => {
+        if (data.ticketId) {
+          setMaintenanceTickets(prev => prev.map(t => 
+            t._id === data.ticketId ? { ...t, status: data.status } : t
+          ));
         }
-      });
+        if (onRefresh) onRefresh();
+      };
 
-      socket.on('request_update', (data) => {
-        setMaintenanceTickets(prev => prev.map(t => 
-          t._id === data.ticketId ? { ...t, status: data.status } : t
-        ));
-      });
+      socket.on('new_ticket', handleNewTicket);
+      socket.on('request_update', handleUpdate);
+      socket.on('workflow_update', handleUpdate);
+      socket.on('new_workflow_request', handleUpdate);
+
+      return () => {
+        socket.off('new_ticket', handleNewTicket);
+        socket.off('request_update', handleUpdate);
+        socket.off('workflow_update', handleUpdate);
+        socket.off('new_workflow_request', handleUpdate);
+      };
     }
-
-    return () => {
-      if (socket) {
-        socket.off('new_ticket');
-        socket.off('admin_notification');
-      }
-    };
   }, [data, isChatOpen]);
 
   // --- Handlers ---
