@@ -2,7 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAy7tCJlAVCnC9gvrbnJAhrtT4TWebPlw",
+  apiKey: "AIzaSyAy7tJCjlAVCnC9gvrbnJAhrtT4TwEbPlw",
   authDomain: "rentify-44b99.firebaseapp.com",
   projectId: "rentify-44b99",
   storageBucket: "rentify-44b99.firebasestorage.app",
