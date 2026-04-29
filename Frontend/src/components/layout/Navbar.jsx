@@ -228,7 +228,19 @@ const Navbar = () => {
             </>
           ) : (
             <div className="flex items-center gap-2">
-              {!isHomePage && <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>Login</Button>}
+              {!isHomePage && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => {
+                    const personaMatch = location.pathname.match(/\/welcome\/([^/]+)/);
+                    const roleParam = personaMatch ? `?role=${personaMatch[1]}` : '';
+                    navigate(`/login${roleParam}`);
+                  }}
+                >
+                  Login
+                </Button>
+              )}
               <Button 
                 variant="primary" 
                 size="sm" 

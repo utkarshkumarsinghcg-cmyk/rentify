@@ -31,6 +31,36 @@ const Login = () => {
   const [otpCode, setOtpCode] = useState('');
   const [otpCountdown, setOtpCountdown] = useState(0);
   const [confirmationResult, setConfirmationResult] = useState(null);
+
+  // Auto-detect role from URL, LocalStorage, or Referrer
+  useEffect(() => {
+    const referrer = document.referrer || '';
+    const params = new URLSearchParams(window.location.search);
+    const paramRole = params.get('role');
+    const storedRole = localStorage.getItem('rentify_user_role');
+    
+    const roleMap = { 
+      'owner': 'OWNER', 
+      'renter': 'RENTER', 
+      'tenant': 'RENTER', 
+      'service': 'SERVICE', 
+      'inspector': 'INSPECTOR' 
+    };
+
+    if (paramRole && roleMap[paramRole.toLowerCase()]) {
+      setSelectedRole(roleMap[paramRole.toLowerCase()]);
+    } else if (storedRole && roleMap[storedRole.toLowerCase()]) {
+      setSelectedRole(roleMap[storedRole.toLowerCase()]);
+    } else if (referrer.toLowerCase().includes('owner')) {
+      setSelectedRole('OWNER');
+    } else if (referrer.toLowerCase().includes('tenant') || referrer.toLowerCase().includes('renter')) {
+      setSelectedRole('RENTER');
+    } else if (referrer.toLowerCase().includes('service')) {
+      setSelectedRole('SERVICE');
+    } else if (referrer.toLowerCase().includes('inspector')) {
+      setSelectedRole('INSPECTOR');
+    }
+  }, []);
   
   const [formData, setFormData] = useState({
     username: '',
@@ -270,30 +300,16 @@ const Login = () => {
             <p className="text-slate-500 dark:text-slate-400">Please enter your details to sign in.</p>
           </div>
 
-          {/* Role Selector */}
-          <div className="mb-5">
-            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">I am a</label>
-            <div className="grid grid-cols-4 gap-2">
-              {ROLES.map((role) => {
-                const Icon = role.icon;
-                const isSelected = selectedRole === role.id;
-                return (
-                  <button
-                    key={role.id}
-                    type="button"
-                    onClick={() => setSelectedRole(role.id)}
-                    className={`flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl text-xs font-bold transition-all duration-200 border-2 ${
-                      isSelected
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-600/25'
-                        : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600'
-                    }`}
-                  >
-                    <Icon size={16} />
-                    {role.label}
-                  </button>
-                );
-              })}
-            </div>
+          {/* Auto-detected Role Badge (Subtle) */}
+          <div className="mb-5 flex items-center justify-center lg:justify-start gap-2">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Persona:</span>
+            <span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-black rounded-md border border-blue-100 dark:border-blue-800 flex items-center gap-1.5">
+              {(() => {
+                const roleObj = ROLES.find(r => r.id === selectedRole);
+                const Icon = roleObj?.icon || Home;
+                return <><Icon size={12} />{roleObj?.label || 'Tenant'}</>;
+              })()}
+            </span>
           </div>
 
           {/* Google Button */}

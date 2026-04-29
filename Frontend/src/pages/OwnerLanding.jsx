@@ -19,6 +19,10 @@ const OwnerLanding = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  React.useEffect(() => {
+    localStorage.setItem('rentify_user_role', 'owner');
+  }, []);
+
   const handleSignup = () => {
     dispatch(openAuthModal('signup'));
   };

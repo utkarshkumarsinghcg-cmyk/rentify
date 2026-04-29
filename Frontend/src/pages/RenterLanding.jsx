@@ -22,6 +22,10 @@ const RenterLanding = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  React.useEffect(() => {
+    localStorage.setItem('rentify_user_role', 'tenant');
+  }, []);
+
   return (
     <div className="bg-surface dark:bg-slate-950 font-inter antialiased min-h-screen flex flex-col">
       <Helmet>
