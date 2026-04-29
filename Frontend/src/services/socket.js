@@ -1,6 +1,10 @@
 /**
  * Socket.io Client Singleton
  * Always import from this file — never create a second socket instance.
+ *
+ * Two connection modes (backward-compatible):
+ *  1. Legacy: getSocket() auto-creates an unauthenticated socket (existing dashboards).
+ *  2. Auth:   connectSocket(token) upgrades to a JWT-authenticated socket (new useSocket hook).
  */
 import { io } from 'socket.io-client';
 
@@ -10,16 +14,42 @@ const BASE_URL = import.meta.env.VITE_API_URL
 
 let socket = null;
 
-/** Returns the current socket instance (may be null if not yet connected). */
-export const getSocket = () => socket;
+/**
+ * Returns the socket instance, creating an unauthenticated one if needed.
+ * Kept for backward-compat so existing dashboard components do not crash.
+ */
+export const getSocket = () => {
+  if (!socket) {
+    socket = io(BASE_URL, {
+      transports: ['websocket', 'polling'],
+      autoConnect: true,
+    });
+
+    socket.on('connect', () =>
+      console.log('[Socket] Connected (legacy):', socket.id)
+    );
+    socket.on('connect_error', (err) =>
+      console.warn('[Socket] connect_error:', err.message)
+    );
+  }
+  return socket;
+};
 
 /**
- * Creates and connects the socket with JWT auth.
+ * Creates / upgrades the socket with JWT auth.
  * If a connected socket already exists, returns it immediately (singleton).
+ * Call this after login so the server's auth middleware can verify the user.
  * @param {string} token  JWT access token from Redux auth state
  */
 export const connectSocket = (token) => {
+  // If already connected with auth, reuse it
   if (socket?.connected) return socket;
+
+  // Disconnect any stale unauthenticated socket before creating an authed one
+  if (socket) {
+    socket.disconnect();
+    socket = null;
+  }
 
   socket = io(BASE_URL, {
     auth: { token },
@@ -32,22 +62,22 @@ export const connectSocket = (token) => {
 
   socket.connect();
 
-  socket.on('connect', () => {
-    console.log('[Socket] Connected:', socket.id);
-  });
-  socket.on('connect_error', (err) => {
-    console.error('[Socket] Connection error:', err.message);
-  });
-  socket.on('disconnect', (reason) => {
-    console.warn('[Socket] Disconnected:', reason);
-  });
+  socket.on('connect', () =>
+    console.log('[Socket] Authenticated connected:', socket.id)
+  );
+  socket.on('connect_error', (err) =>
+    console.error('[Socket] Connection error:', err.message)
+  );
+  socket.on('disconnect', (reason) =>
+    console.warn('[Socket] Disconnected:', reason)
+  );
 
   return socket;
 };
 
 /**
  * Legacy helper — joins user and role rooms.
- * Kept for backward-compat; new code should rely on server-side auto-join.
+ * Kept for backward-compat with NotificationListener.jsx.
  * @param {string} userId
  * @param {string} role
  */
