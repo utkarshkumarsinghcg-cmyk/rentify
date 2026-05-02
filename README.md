@@ -1,6 +1,7 @@
 # 🗝️ Rentify: The All-in-One Rental Ecosystem
 
 ## 🔗 Important Links
+-  Backend Deployed LINK : https://rentify-a40l.onrender.com
 - 🎨 Figma Design: https://www.figma.com/design/yk9uxFudLynjz4L0Q4ulkK/Untitled?node-id=0-1&t=rkQqWQLlO4P2CEIl-1  
 - 🎥 YouTube Demo: https://youtu.be/QrUMbuIqOYY?si=skAYtKHlUBadPcpN  
 - 📮 Postman API Docs: https://utkarshkumarsingh491-4142312.postman.co/workspace/Utkarsh-kumar-singh's-Workspace~b4d458b6-c2cd-4910-812d-aa90b1aab5fb/collection/50840985-90d4e4e5-ce3f-4c33-b1a8-01aac960df46?action=share&creator=50840985  
