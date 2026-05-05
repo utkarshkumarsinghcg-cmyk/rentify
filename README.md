@@ -4,98 +4,120 @@
 
 ---
 
-## 🏗️ System Architecture
-Rentify is built on a modern **MERN** stack with a focus on real-time event-driven communication and role-based access control (RBAC).
+## 🔗 Important Links
 
-*   **Backend**: Node.js & Express using a modular **Controller-Service-Route** pattern.
-*   **Frontend**: React.js with **Redux Toolkit** for centralized state management.
-*   **Database**: MongoDB with Mongoose ODM for flexible yet structured data modeling.
-*   **Real-Time**: Socket.io for instant notifications and live dashboard updates.
-
----
-
-## 🔐 Advanced Authentication System
-Rentify features one of the most comprehensive authentication systems available:
-
-### 1. Multi-Provider Login
-*   **Standard Auth**: Traditional Email/Password with Bcrypt salting (10 rounds).
-*   **Google OAuth**: Seamless social login integration.
-*   **Email OTP**: Passwordless login via 6-digit codes sent through Nodemailer (Gmail SMTP).
-*   **Firebase Phone Auth**: High-security mobile verification.
-
-### 2. Intelligent Rate Limiting (The "330 Rule")
-To prevent API abuse and manage costs, we implemented a custom backend monitor:
-*   **Global SMS Cap**: The system tracks every SMS sent via Firebase. 
-*   **Automatic Cutoff**: Once the platform reaches **330 SMS messages in a 24-hour period**, the backend automatically disables Phone OTP and redirects users to Email OTP to ensure zero service interruption.
-*   **Email Throttling**: Limits users to 5 OTP requests per hour per email address to prevent spam.
-
-### 3. Test Credentials
-Use these pre-seeded accounts to explore the various role-based dashboards:
-
-| Role | Username (Login) | Password |
-| :--- | :--- | :--- |
-| 🛡️ **Admin** | `arjun.admin` | `arjun.admin` |
-| 🏠 **Owner** | `priya.mehta` | `priya.mehta` |
-| 🏘️ **Tenant** | `amit.kumar` | `amit.kumar` |
-| 🔍 **Inspector** | `deepak.rao` | `deepak.rao` |
-| 🔧 **Service** | `suresh.mistry` | `suresh.mistry` |
+* 🌐 [**Backend Deployed LINK**](https://rentify-a40l.onrender.com)
+* 🎨 [**Figma Design**](https://www.figma.com/design/yk9uxFudLynjz4L0Q4ulkK/Untitled?node-id=0-1&t=rkQqWQLlO4P2CEll-1)
+* 🎬 [**YouTube Demo**](https://youtu.be/QrUMbulqOYY?si=skAYtKHIUBadPcpN)
+* 📕 [**Postman API Docs**](https://utkarshkumarsingh491-4142312.postman.co/workspace/Utkarsh-kumar-singh's-Workspace~b4d458b6-c2cd-4910-812d-aa90b1aab5fb/collection/50840985-90d4e4e5-ce3f-4c33-b1a8-01aac960df46?action=share&creator=50840985)
 
 ---
 
-## 🎭 Role-Specific Ecosystems
-Rentify isn't just one app; it's five apps in one. Each role has a completely unique interface and logic set.
+## 📸 UI Screenshots
 
-### 🏠 The Owner Experience
-Designed for portfolio growth and effortless management.
-*   **Property Hub**: List new properties with detailed specs and images.
-*   **Financial Analytics**: Real-time tracking of total revenue, pending rent, and maintenance expenses.
-*   **Lease Management**: Digital tracking of active tenants and lease expiration dates.
-*   **Asset Overview**: Quick-glance status (Occupied vs. Vacant) for every unit.
-
-### 🔑 The Tenant (Renter) Experience
-Focused on convenience and "living better."
-*   **Property Discovery**: Interactive listing page to find the perfect home.
-*   **Maintenance Portal**: Submit repair requests with photos and track technician progress in real-time.
-*   **Payment History**: View all past rent payments and upcoming dues.
-*   **Digital Keys**: Instant access to lease documents and property rules.
-
-### 🛠️ The Service Provider Network
-A professional tool for technicians and contractors.
-*   **Job Queue**: View all assigned maintenance tickets sorted by priority (Critical, High, Medium).
-*   **Status Management**: Update jobs from "Pending" to "In Progress" to "Completed" with one tap.
-*   **Property Navigation**: Access property locations and contact info for efficient site visits.
-
-### 🔍 The Inspector's Audit Vault
-The professional standard for property safety.
-*   **Digital Audits**: Structured walkthroughs for safety, cleanliness, and structural integrity.
-*   **Audit Vault**: A secure history of all past inspections per property.
-*   **Compliance Tracking**: Mark properties as "Verified" or "Action Required" based on audit results.
-
-### 🛡️ The Admin Command Center
-Global governance for the entire platform.
-*   **User Management**: Monitor and manage all user accounts across all roles.
-*   **System Analytics**: Global stats on total transactions and platform growth.
-*   **Security Logs**: Real-time monitoring of authentication events and potential risks.
+<!-- Add your image URLs in the src="" attributes below -->
+<div align="center">
+  <img src="" alt="Dashboard" width="48%" />
+  <img src="" alt="Listings" width="48%" />
+  <br />
+  <img src="" alt="Features" width="48%" />
+  <img src="" alt="Roles" width="48%" />
+</div>
 
 ---
 
-## 🤖 WhatsApp Automation Bot (`whatsapp-web.js`)
-Rentify includes a server-side "Concierge" bot that creates a high-touch user experience without manual work.
-
-*   **Zero-Cost Setup**: Uses your existing phone via QR code scanning—no expensive Meta Business API required.
-*   **Context-Aware Messaging**:
-    *   **Tenants**: Get a "Welcome Home" message with digital key info.
-    *   **Owners**: Get a "Business Mode" message about portfolio setup.
-    *   **Service/Inspectors**: Receive onboarding details for the professional network.
-*   **Auto-Trigger**: Fires instantly upon successful registration via traditional signup or OTP.
+## 📌 Project Description
+Rentify is a smart full-stack rental management platform inspired by real-world problem statements from Razorpay use cases. It connects Owners, Tenants, Inspectors, Service Providers, and Admins into a single unified system to manage property listings, payments, inspections, and maintenance efficiently.
 
 ---
 
-## 📡 Real-Time Notification Engine
-Powered by **Socket.io**, the platform keeps everyone in sync:
-*   **Owner Alerts**: Notified instantly when a tenant submits a maintenance request.
-*   **Service Alerts**: Notified when a new job is assigned to them.
-*   **Status Sync**: Dashboards update live without needing a page refresh when data changes.
+## ❗ Problem Statement
+Traditional rental systems are fragmented and inefficient:
+
+- Property owners struggle to manage listings and rent tracking  
+- Renters face issues with secure payments and maintenance delays  
+- Inspection processes are manual and unorganized  
+- Service providers lack structured workflows  
+- No centralized system connects all stakeholders  
+
+This leads to delays, poor communication, and lack of transparency.
+
+---
+
+## ✅ Solution
+Rentify provides a centralized and role-based platform that:
+
+- Connects all stakeholders in one system  
+- Automates workflows between users  
+- Enables real-time notifications  
+- Provides secure and scalable architecture  
+- Improves transparency and efficiency in rental management  
+
+---
+
+## ✨ Features
+
+### 🔐 Authentication
+- Email/Password Login  
+- Google OAuth  
+- Email OTP  
+- Firebase Phone Authentication  
+- Rate Limiting System  
+
+### 🏠 Owner Dashboard
+- Property listing and management  
+- Lease tracking  
+- Financial insights  
+
+### 🏘️ Tenant Dashboard
+- Property search  
+- Rent payments  
+- Maintenance requests  
+
+### 🔍 Inspector Module
+- Property audits  
+- Inspection reports  
+- Compliance tracking  
+
+### 🛠️ Service Provider
+- Work order management  
+- Task tracking  
+- Status updates  
+
+### 🛡️ Admin Panel
+- User management  
+- Inspector assignment  
+- System monitoring  
+
+### 📡 Real-Time System
+- Socket.io notifications  
+- Live updates  
+
+### 🤖 Automation
+- WhatsApp Bot integration  
+- Role-based automated messaging  
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+- React.js  
+- Redux Toolkit  
+- Tailwind CSS  
+
+### Backend
+- Node.js  
+- Express.js  
+
+### Database
+- MongoDB  
+
+### Tools & Services
+- Socket.io  
+- Firebase Auth  
+- Nodemailer  
+- WhatsApp-web.js  
 
 ---
 
@@ -120,7 +142,7 @@ FIREBASE_PROJECT_ID=...
 ### Frontend Configuration (`Frontend/.env`)
 ```env
 VITE_API_URL=http://localhost:5001/api
-VITE_FIREBASE_CONFIG=...
+
 ```
 
 ---
@@ -142,4 +164,4 @@ npm run seed
 
 ---
 
-**Built with ❤️ by [Your Name] for the future of Real Estate.**
+**Built with ❤️ by Utkarsh Kumar Singh for the future of Real Estate.**
