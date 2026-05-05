@@ -155,6 +155,19 @@ npm run seed
 
 ---
 
+## 🔑 Test Credentials
+Use these pre-seeded accounts to explore the various role-based dashboards:
+
+| Role | Username (Login) | Password |
+| :--- | :--- | :--- |
+| 🛡️ **Admin** | `arjun.admin` | `arjun.admin` |
+| 🏠 **Owner** | `priya.mehta` | `priya.mehta` |
+| 🏘️ **Tenant** | `amit.kumar` | `amit.kumar` |
+| 🔍 **Inspector** | `deepak.rao` | `deepak.rao` |
+| 🔧 **Service** | `suresh.mistry` | `suresh.mistry` |
+
+---
+
 ## 🧪 Testing the WhatsApp Bot
 1.  Start the backend: `npm run dev`.
 2.  Look for the **QR Code** in your terminal.
